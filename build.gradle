@@ -1,0 +1,76 @@
+group 'com.budilov'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.0.0'
+    ext.aws_version = '1.11.63'
+    ext.jest_version = '2.0.3'
+    ext.gradle_deps = '0.6.0.RELEASE'
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "io.spring.gradle:dependency-management-plugin:$gradle_deps"
+    }
+
+
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'application'
+apply plugin: "io.spring.dependency-management"
+
+mainClassName = 'com.budilov.LambdaAddHandler'
+
+defaultTasks 'run'
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+jar {
+    // Not really needed here
+    manifest {
+        attributes 'Main-Class': 'com.budilov.LambdaAddHandler'
+    }
+
+    // This line of code recursively collects and copies all of a project's files
+    // and adds them to the JAR itself. One can extend this task, to skip certain
+    // files or particular types at will
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+task listJars << {
+    configurations.compile.each { File file -> println file.name }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "com.amazonaws:aws-java-sdk-bom:$aws_version"
+    }
+}
+
+dependencies {
+    // Kotlin
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    // AWS SDK
+    compile "com.amazonaws:aws-java-sdk-lambda"
+    compile "com.amazonaws:aws-java-sdk-s3"
+    compile "com.amazonaws:aws-java-sdk-rekognition"
+    compile "com.amazonaws:aws-lambda-java-events:1.3.0"
+    compile "com.amazonaws:aws-lambda-java-core:1.1.0"
+    compile "commons-io:commons-io:2.5"
+
+    // ElasticSearch
+    compile "io.searchbox:jest:$jest_version"
+    compile "vc.inreach.aws:aws-signing-request-interceptor:0.0.15" // Required for Sig4 signing on the Jest requests
+
+    testCompile 'junit:junit:4.11'
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+}
