@@ -13,7 +13,7 @@ import java.net.URLDecoder
  *
  * This Lambda function is invoked by S3 whenever an object is added to an S3 bucket.
  */
-class LambdaAddHandler : RequestHandler<S3Event, String> {
+class AddPhotoLambda : RequestHandler<S3Event, String> {
 
     val rekognition = RekognitionService()
     val esService = ESPictureService()

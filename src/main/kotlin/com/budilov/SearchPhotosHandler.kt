@@ -19,8 +19,10 @@ import java.util.*
  *
  */
 
-class LambdaRestHandler : RequestHandler<ApigatewayRequest.Input, LambdaRestHandler.SearchResponse> {
+class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotosHandler.SearchResponse> {
     val esService = ESPictureService()
+    val searchKeyName = "search-key"
+    val userIdName = "user-key"
 
     data class SearchResponse(var statusCode: Int = 500,
                               var headers: MutableMap<String, String> = HashMap<String, String>(),
@@ -33,25 +35,24 @@ class LambdaRestHandler : RequestHandler<ApigatewayRequest.Input, LambdaRestHand
     override fun handleRequest(request: ApigatewayRequest.Input?, context: Context?): SearchResponse? {
         val response = SearchResponse()
         val logger = context?.logger
-        println("request: " + Gson().toJson(request))
+
+        logger?.log("request payload: " + Gson().toJson(request))
 
         if (request == null || context == null) {
             logger?.log("request or context is null")
         } else {
+            val searchString = request.headers?.get(searchKeyName) ?: ""
+            //todo: figure out how to get this value programmatically based on the jwt claims
+            val userId = request.headers?.get(userIdName) ?: ""
 
-            val keys = context.clientContext?.custom?.keys
-
-            if (keys != null)
-                for (key in context.clientContext.custom.keys)
-                    println("item: " + key)
-
-
-            val pictureList: List<PictureItem> = esService.search(Properties.getRegion() + ":" +
-                    request.requestContext?.authorizer?.claims?.get("sub"), "picture")
+            val pictureList: List<PictureItem> = esService.search(userId, searchString)
             logger?.log("Found pictures: " + pictureList)
 
             for (picture in pictureList) {
-                picture.signedUrl = S3Service.getSignedUrl(Properties.getBucketName(), picture.id).toString()
+                println("object: " + picture.s3BucketUrl.substringAfter("/"))
+
+                picture.signedUrl = S3Service.getSignedUrl(Properties.getBucketName(),
+                        picture.s3BucketUrl.substringAfter("/")).toString()
             }
             response.statusCode = 200
             response.headers.put("Content-Type", "application/json")

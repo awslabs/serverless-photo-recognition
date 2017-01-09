@@ -22,7 +22,7 @@ apply plugin: 'kotlin'
 apply plugin: 'application'
 apply plugin: "io.spring.dependency-management"
 
-mainClassName = 'com.budilov.LambdaAddHandler'
+mainClassName = 'com.budilov.AddPhotoHandler'
 
 defaultTasks 'run'
 
@@ -36,7 +36,7 @@ repositories {
 jar {
     // Not really needed here
     manifest {
-        attributes 'Main-Class': 'com.budilov.LambdaAddHandler'
+        attributes 'Main-Class': 'com.budilov.AddPhotoHandler'
     }
 
     // This line of code recursively collects and copies all of a project's files
@@ -69,7 +69,8 @@ dependencies {
 
     // ElasticSearch
     compile "io.searchbox:jest:$jest_version"
-    compile "vc.inreach.aws:aws-signing-request-interceptor:0.0.15" // Required for Sig4 signing on the Jest requests
+    // Required for Sig4 signing on the Jest requests
+    compile "vc.inreach.aws:aws-signing-request-interceptor:0.0.15"
 
     testCompile 'junit:junit:4.11'
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"

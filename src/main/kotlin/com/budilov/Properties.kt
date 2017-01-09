@@ -9,7 +9,7 @@ package com.budilov
 
 object Properties {
     private val _REGION = "us-east-1"
-    private val _BUCKET_NAME = "s3-website"
+    private val _BUCKET_NAME = "rekognition-pics"
     private val _BUCKET_URL = "." + _BUCKET_NAME + "-" + _REGION + ".amazonaws.com"
     private val _ES_SERVICE_URL = "https://search-rekognition-6pce3dkelwl47wm3urifjfvk6u." + Properties._REGION + ".es.amazonaws.com"
     private val _REKOGNITION_URL = "https://rekognition." + Properties.getRegion() + ".amazonaws.com"

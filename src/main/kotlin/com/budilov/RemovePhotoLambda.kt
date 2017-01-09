@@ -15,7 +15,7 @@ import java.net.URLDecoder
  * the needed information and remove the entry from ElasticSearch
  *
  */
-class LambdaRemoveHandler : RequestHandler<S3Event, String> {
+class RemovePhotoLambda : RequestHandler<S3Event, String> {
     val esService = ESPictureService()
     /**
      * 1. Get the s3 bucket and object name in question

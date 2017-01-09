@@ -8,4 +8,6 @@
 listJars/
 gradlew.bat
 repo/
-setup/
+
+setup/config*sh
+setup/curl*

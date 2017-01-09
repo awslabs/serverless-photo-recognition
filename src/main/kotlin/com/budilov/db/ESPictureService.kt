@@ -91,6 +91,8 @@ class ESPictureService() : DBPictureService {
      */
     override fun search(userId: String, query: String): List<PictureItem> {
         val matchAllQuery = _MATCH_ALL_QUERY.replace("REPLACE_ME", query)
+        println("userid: "  + userId)
+        println("esquery: " + matchAllQuery)
 
         val search = Search.Builder(matchAllQuery)
                 // multiple index or types can be added.
