@@ -1,4 +1,4 @@
-Serverless Photo Recognition (WIP)
+Serverless Photo Recognition
 ===================================================
 
 ### What is it?
