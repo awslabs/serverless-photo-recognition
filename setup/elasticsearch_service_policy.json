@@ -1,0 +1,27 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::540403165297:role/s3-to-es"
+      },
+      "Action": "es:*",
+      "Resource": "arn:aws:es:us-east-1:540403165297:domain/rekognition/*"
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "es:*",
+      "Resource": "arn:aws:es:us-east-1:540403165297:domain/rekognition/*",
+      "Condition": {
+        "IpAddress": {
+          "aws:SourceIp": "71.162.161.103"
+        }
+      }
+    }
+  ]
+}
