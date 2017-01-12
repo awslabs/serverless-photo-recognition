@@ -22,6 +22,15 @@ There are multiple AWS services involved here. Follow the below instructions for
 #### Amazon Cognito
 We need to setup cognito before we can do anything else. Follow the instructions on [this github repo](https://github.com/awslabs/aws-cognito-angular2-quickstart) to get everything setup. 
 
+Once you set it up, run ```npm start``` and go to the following url ```http://localhost:4200/```. Register and login, 
+and you will see the following screen once you login:
+![Cognito Screen](/setup/img/cognito-screen.png?raw=true)
+
+Write down the value of cognito ID -- you will need it later on when testing your setup (the <YOUR_COGNITO_ID> value). 
+
+Click on the JWT Tokens tab on the left, then "Id Token" tab and copy the token value. You'll need it
+when running the curl command to search for images (the <JWT_ID_TOKEN> value). 
+
 #### AWS Lambda
 For convenience, all 3 AWS Lambda functions are packaged in this project (later on you might want to separate them 
 into different projects to minimize the size of each Lambda function)
@@ -60,11 +69,13 @@ have access to the Elasticsearch cluster
 ### Let's test it
 Upload a picture to the S3 bucket:
 
-```aws s3 cp profile.JPG s3://<YOUR_BUCKET>/usercontent/<YOUR_COGNITO_ID>/```
+```aws s3 cp <IMAGE> s3://<YOUR_BUCKET>/usercontent/<YOUR_COGNITO_ID>/```
 
 Let's see what the logs tell us (the rekognition-add-pic Lambda function should have kicked off and you should 
 see a log entry with the labels ):
 
 ```awslogs get /aws/lambda/rekognition-add-pic ALL -s1h | grep <picturename>```
 
+Now let's search:
 
+```curl -X POST -H "Authorization: <JWT_ID_TOKEN>" -H "search-key: glasses" -H "Cache-Control: no-cache" "https://e9djdv2xjb.execute-api.us-east-1.amazonaws.com/prd/picture/search"```
