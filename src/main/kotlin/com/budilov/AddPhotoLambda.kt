@@ -26,7 +26,7 @@ class AddPhotoLambda : RequestHandler<S3Event, String> {
      */
     override fun handleRequest(s3event: S3Event, context: Context): String {
         val record = s3event.getRecords().get(0)
-
+        val logger = context.logger
         val srcBucket = record.getS3().getBucket().name
 
         // Object key may have spaces or unicode non-ASCII characters.
@@ -34,25 +34,26 @@ class AddPhotoLambda : RequestHandler<S3Event, String> {
                 .replace('+', ' ')
 
         val srcKey = URLDecoder.decode(srcKeyEncoded, "UTF-8")
-        println("bucket: " + srcBucket + " key: " + srcKey)
+        logger.log("bucket: " + srcBucket + " key: " + srcKey)
 
         // Get the cognito id from the object name (it's a prefix)
         val cognitoId = srcKey.split("/")[1]
-        println("Cognito ID: " + cognitoId)
+        logger.log("Cognito ID: " + cognitoId)
 
         val labels = rekognition.getLabels(srcBucket, srcKey)
         if (labels != null && labels.size > 0) {
             val picture = PictureItem(srcKeyEncoded.hashCode().toString(), srcBucket + Properties.getBucketSuffix() + "/" + srcKey, labels, null)
-            println("Saving picture: " + picture)
+            logger.log("Saving picture: " + picture)
 
             // Save the picture to ElasticSearch
             esService.add(cognitoId, picture)
 
         } else {
-            println("No labels returned. Not saving to ES")
-            //todo: create an actionable event to replay the action
+            logger.log("No labels returned. Not saving to ES")
+            //todo: create an actionable event to replay the flow
         }
 
         return "Ok"
     }
+
 }
