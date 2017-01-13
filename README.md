@@ -13,11 +13,13 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 * [aws cli](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
 * [awslogs utility](https://github.com/jorgebastida/awslogs)
 
-#### AWS Services
+#### AWS Services Involved In This Architecture
+* [Amazon Rekognition](https://aws.amazon.com/rekognition/)
+* [Amazon Cognito](https://aws.amazon.com/cognito/)
 * [AWS Lambda](https://aws.amazon.com/lambda/)
 * [Amazon API Gateway](https://aws.amazon.com/api-gateway/)
-* [Amazon Rekognition](https://aws.amazon.com/rekognition/)
 * [Amazon S3](https://aws.amazon.com/s3/)
+* [Amazon Elasticsearch](https://aws.amazon.com/elasticsearch-service/)
 
 ### AWS Setup
 There are multiple AWS services involved here. Follow the below instructions for each one of them 
@@ -64,12 +66,76 @@ trigger the _rekognition-add-pic_ Lambda function on a POST and _rekognition-del
 
 
 #### Amazon API Gateway
-Setup your API Gateway. See instructions below:
+Setup your API Gateway Proxy with Lambda as your Integration endpoint. See instructions below:
 [API Gateway Proxy Setup](http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-set-up-simple-proxy.html)
 
 You can use the swagger definitions included under ```setup/apigateway-swagger.json```, but make sure to modify the 
 Amazon Cognito configurations before importing the swagger definition -- it'll fail otherwise. 
 
+API Gateway will proxy the requests with the following data being available to you 
+(POJO defined in com.budilov.pojo.ApigatewayRequest.kt):
+```
+
+{
+    "path":"/picture/search",
+    "headers":{
+    "Accept":"*/*",
+    "Accept-Encoding":"gzip, deflate, br",
+    "Accept-Language":"en-US,en;q\u003d0.8,ru;q\u003d0.6",
+    "Authorization":"aaaaa.bbbbb.cccccc",
+    "Cache-Control":"no-cache",
+    "CloudFront-Forwarded-Proto":"https",
+    "CloudFront-Is-Desktop-Viewer":"true",
+    "CloudFront-Is-Mobile-Viewer":"false",
+    "CloudFront-Is-SmartTV-Viewer":"false",
+    "CloudFront-Is-Tablet-Viewer":"false",
+    "CloudFront-Viewer-Country":"US",
+    "Content-Type":"text/plain;charset\u003dUTF-8",
+    "DNT":"1",
+    "Host":"e9djdv2xjb.execute-api.us-east-1.amazonaws.com",
+    "Origin":"chrome-extension://fhbjgbiflinjbdggehcddcbncdddomop",
+    "Postman-Token":"00f89100-c230-2a1b-36b3-d854b4bb432f",
+    "search-key":"glasses",
+    "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
+    "Via":"1.1 829eee129e6b5002d6c1a37f04888da1.cloudfront.net (CloudFront)",
+    "X-Amz-Cf-Id":"VxjWNrjlTek5VOJ2tMoPzYJXXZ9wIsddjDxMT-ncCsxsU7AoRiXYLA\u003d\u003d",
+    "X-Forwarded-For":"71.162.161.103, 54.240.159.56",
+    "X-Forwarded-Port":"443",
+    "X-Forwarded-Proto":"https"
+},
+    "requestContext":{
+    "accountId":"540403165297",
+    "resourceId":"ywrcne",
+    "stage":"prd",
+    "requestId":"2f5b082a-d57a-11e6-9502-5b8a76e3fba2",
+    "identity":{
+    "sourceIp":"71.162.161.103",
+    "userAgent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
+},
+    "authorizer":{
+    "claims":{
+    "sub":"aaaaaaa-bbbbb-ccccc-ddddd-eeeeeeeeeeee",
+    "aud":"asdfasdfasdfasdf",
+    "email_verified":"true",
+    "token_use":"id",
+    "auth_time":"1483859554",
+    "iss":"https://cognito-idp.us-east-1.amazonaws.com/us-east-1_AAAAAAAAA",
+    "nickname":"Vladimir",
+    "cognito:username":"vladimir.budilov@myemaildomain.com",
+    "exp":"Sun Jan 08 08:12:34 UTC 2017",
+    "iat":"Sun Jan 08 07:12:34 UTC 2017",
+    "email":"vladimir.budilov@myemaildomain.com"
+}
+},
+    "resourcePath":"/picture/search",
+    "httpMethod":"POST",
+    "apiId":"asdfasdfasdfasdf"
+},
+    "resource":"/picture/search",
+    "httpMethod":"POST"
+}
+
+```
 #### Amazon Rekognition
 You don't need to do anything specific to start using Amazon Rekognition. 
 
