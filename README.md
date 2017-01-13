@@ -5,6 +5,9 @@ Serverless Photo Recognition
 A collection of 3 lambda functions that are invoked by Amazon S3, Amazon API Gateway, and directly (RESTful calls) 
 to analyze uploaded images in S3 and save picture labels to ElasticSearch and search them
 
+### The Architecture
+![ServerlessPhotoRecognitionArchitecture](/setup/img/ServerlessPhotoRecognitionArchitecture.png?raw=true)
+
 ### Tech Stack
 #### Required Tools
 * [aws cli](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
@@ -20,9 +23,18 @@ to analyze uploaded images in S3 and save picture labels to ElasticSearch and se
 There are multiple AWS services involved here. Follow the below instructions for each one of them 
 
 #### Amazon Cognito
-We need to setup cognito before we can do anything else. Follow the instructions on [this github repo](https://github.com/awslabs/aws-cognito-angular2-quickstart) to get everything setup. 
+You need to have the following Amazon Cognito parameters in order to test out this setup: 
 
-Once you set it up, run ```npm start``` and go to the following url ```http://localhost:4200/```. Register and login, 
+* JWT ID Token
+* Cognito Pool Id
+* User Pool Id
+
+There are two ways of getting them. The first one is for you to go to (this demo site)[http://cognito.budilov.com], 
+register & login, and then follow the instructions below, or you can setup the demo site yourself by creating 
+all of the required services (this will force you to change the content of the Properties.kt object with your own, 
+updated values). Follow the instructions on [this github repo](https://github.com/awslabs/aws-cognito-angular2-quickstart) if you choose the latter. 
+
+Once you set it up, run ```npm start``` and go to the following url ```http://localhost:4200/``` (or just go (here)[http://cognito.budilov.com]). Register and login, 
 and you will see the following screen once you login:
 ![Cognito Screen](/setup/img/cognito-screen.png?raw=true)
 
@@ -30,6 +42,9 @@ Write down the value of cognito ID -- you will need it later on when testing you
 
 Click on the JWT Tokens tab on the left, then "Id Token" tab and copy the token value. You'll need it
 when running the curl command to search for images (the <JWT_ID_TOKEN> value). 
+
+Note: As noted, if you went the route of setting up your own Amazon Cognito service, you'll need to 
+update the com.budilov.Properties.kt object with the values, otherwise you'll get authentication errors. 
 
 #### AWS Lambda
 For convenience, all 3 AWS Lambda functions are packaged in this project (later on you might want to separate them 
