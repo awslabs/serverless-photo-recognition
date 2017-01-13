@@ -3,7 +3,7 @@ Serverless Photo Recognition
 
 ### What is it?
 A collection of 3 lambda functions that are invoked by Amazon S3, Amazon API Gateway, and directly (RESTful calls) 
-to analyze uploaded images in S3 and save picture labels to ElasticSearch and search them
+to analyze uploaded images in S3 with Amazon Rekognition and save picture metadata to ElasticSearch
 
 ### The Architecture
 ![ServerlessPhotoRecognitionArchitecture](/setup/img/ServerlessPhotoRecognitionArchitecture.png?raw=true)
@@ -114,7 +114,7 @@ You will get the following json as the result:
       "Meal",
       "Plate"
     ],
-    "signedUrl": "https://rekognition-pics.s3.amazonaws.com/usercontent/us-east-1%3Adb8b98fa-8d96-4ff9-98d4-abf460f79859/DSC09211.JPG?x-amz-security-token=FQoDYXdzELb%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDK1aumxkOQQiNlDwEiLoAWcJV00GoCsNQTbapygMvvtv0%2BGfjrzTT%2B5sPGr4UPrYXK6Y8cMi9CscswfQhfN3kRJpjdRaFl9eTsnSHrVGdX1C8DvQsKF7vxb52e4soW%2FkmIjdnB6LR1XD7Iv6sRVX0Eq%2BVh8uZUL0TVBhw73bDUMkJodjYsmolHT9g2ZlTwA1Itj9IvZm2OrofAuF%2BG1Lsc9tWidFlXG5ZjbPw8Qb37%2Fn%2Bo9J6m%2BsknwpWCUWwoNbU5MtSSB5hbe7qDp98Z3l%2FNjbFQUs4CLqXcx9nrm%2FXcy%2B2qaWwbcHp1dVVDkTwyEdTxByQLx2xfooqrrhwwU%3D&AWSAccessKeyId=ASIAIUAHRYGHP5P7D4KA&Expires=1484286784&Signature=ESsdWSpxLplh8A%2BlzeyA47BGWLM%3D"
+    "signedUrl": "https://my-pics.s3.amazonaws.com/usercontent/us-east-1%xxxxxx-xxxx-xxxx-98d4-xxxxxxxxxxx/DSC09211.JPG?x-amz-security-token=FQoDYXdzELb%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDK1aumxkOQQiNlDwEiLoAWcJV00GoCsNQTbapygMvvtv0%2BGfjrzTT%2B5sPGr4UPrYXK6Y8cMi9CscswfQhfN3kRJpjdRaFl9eTsnSHrVGdX1C8DvQsKF7vxb52e4soW%2FkmIjdnB6LR1XD7Iv6sRVX0Eq%2BVh8uZUL0TVBhw73bDUMkJodjYsmolHT9g2ZlTwA1Itj9IvZm2OrofAuF%2BG1Lsc9tWidFlXG5ZjbPw8Qb37%2Fn%2Bo9J6m%2BsknwpWCUWwoNbU5MtSSB5hbe7qDp98Z3l%2FNjbFQUs4CLqXcx9nrm%2FXcy%2B2qaWwbcHp1dVVDkTwyEdTxByQLx2xfooqrrhwwU%3D&AWSAccessKeyId=ASIAIUAHRYGHP5P7D4KA&Expires=1484286784&Signature=ESsdWSpxLplh8A%2BlzeyA47BGWLM%3D"
   }
 ]
 ```
