@@ -41,7 +41,7 @@ class AddPhotoLambda : RequestHandler<S3Event, String> {
         logger.log("Cognito ID: " + cognitoId)
 
         val labels = rekognition.getLabels(srcBucket, srcKey)
-        if (labels != null && labels.size > 0) {
+        if (labels.isNotEmpty()) {
             val picture = PictureItem(srcKeyEncoded.hashCode().toString(), srcBucket + Properties.getBucketSuffix() + "/" + srcKey, labels, null)
             logger.log("Saving picture: " + picture)
 

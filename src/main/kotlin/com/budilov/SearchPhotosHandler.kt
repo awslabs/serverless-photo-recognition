@@ -51,7 +51,7 @@ class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotos
             logger?.log("Found pictures: " + pictureList)
 
             for (picture in pictureList) {
-                println("object: " + picture.s3BucketUrl.substringAfter("/"))
+                logger?.log("object: " + picture.s3BucketUrl.substringAfter("/"))
 
                 picture.signedUrl = S3Service.getSignedUrl(Properties.getBucketName(),
                         picture.s3BucketUrl.substringAfter("/")).toString()
@@ -78,7 +78,7 @@ class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotos
         idRequest.identityPoolId = Properties.getCognitoPoolId()
         var providerTokens: Map<String, String> = mapOf(Pair(Properties.getCognitoPoolIdpName(), authToken))
 
-        idRequest.setLogins(providerTokens);
+        idRequest.logins = providerTokens
 
         val idResp = identityClient.getId(idRequest)
 

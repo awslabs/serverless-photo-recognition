@@ -16,13 +16,16 @@ import java.net.URLDecoder
  *
  */
 class RemovePhotoLambda : RequestHandler<S3Event, String> {
+
     val esService = ESPictureService()
+
     /**
      * 1. Get the s3 bucket and object name in question
      * 2. Clean the object name
      * 3. Delete the bucket/object & labels from ElasticSearch
      */
     override fun handleRequest(s3event: S3Event, context: Context): String {
+        val logger = context.logger
         val record = s3event.getRecords().get(0)
 
         val srcBucket = record.getS3().getBucket().name
@@ -31,17 +34,16 @@ class RemovePhotoLambda : RequestHandler<S3Event, String> {
         var srcKeyEncoded = record.s3.`object`.key
                 .replace('+', ' ')
 
-        println("Full object name: " + record.s3.`object`.toString())
+        logger?.log("Full object name: " + record.s3.`object`.toString())
         val srcKey = URLDecoder.decode(srcKeyEncoded, "UTF-8")
-        println("bucket: " + srcBucket + " key: " + srcKey)
+        logger?.log("bucket: " + srcBucket + " key: " + srcKey)
 
         val picture = PictureItem(srcKeyEncoded.hashCode().toString(), srcBucket + Properties.getBucketSuffix() + "/" + srcKey, null, null)
-        println("Removing picture from ES: " + picture)
+        logger?.log("Removing picture from ES: " + picture)
 
-        // Get the cognito id
-        // Get the cognito id from the object name (it's a prefix)
+        // Getting the cognito id from the object name (it's a prefix)
         val cognitoId = srcKey.split("/")[1]
-        println("Cognito ID: " + cognitoId)
+        logger?.log("Cognito ID: " + cognitoId)
 
         esService.delete(cognitoId, picture)
 

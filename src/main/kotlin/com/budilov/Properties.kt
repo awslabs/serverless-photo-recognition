@@ -8,7 +8,7 @@ package com.budilov
  */
 
 object Properties {
-    private val _REGION = "us-east-1"
+     val _REGION = "us-east-1"
     private val _ACCOUNT_NUMBER = "540403165297"
     private val _BUCKET_NAME = "rekognition-pics"
     private val _BUCKET_URL = "." + _BUCKET_NAME + "-" + _REGION + ".amazonaws.com"

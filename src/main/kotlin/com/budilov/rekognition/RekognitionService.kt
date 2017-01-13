@@ -17,18 +17,20 @@ import com.budilov.Properties
 
 class RekognitionService {
 
+    val rekognitionClient = AmazonRekognitionClient(EnvironmentVariableCredentialsProvider())
 
+    /**
+     * Returns a list of Rekognition labels for a particular picture in the specified
+     * bucket
+     */
     fun getLabels(bucketName: String, objectName: String): List<String> {
         println("bucketName: " + bucketName + " object: " + objectName)
-
-        var labels: MutableList<String> = arrayListOf()
 
         val s3Object = S3Object().withBucket(bucketName).withName(objectName)
 
         val req = DetectLabelsRequest()
         req.image = Image().withS3Object(s3Object)
 
-        val rekognitionClient = AmazonRekognitionClient(EnvironmentVariableCredentialsProvider())
         rekognitionClient.setEndpoint(Properties.getRekognitionUrl())
         rekognitionClient.setSignerRegionOverride(Properties.getRegion())
 
@@ -39,9 +41,10 @@ class RekognitionService {
             null
         }
 
-        if (res != null)
-            res.labels?.filter { it.confidence > Properties.getRekognitionConfidenceThreshold() }
-                    ?.mapTo(labels) { it.name }
+        val labels: MutableList<String> = arrayListOf()
+        // Make sure that the confidence level of the labe is above our threshold...if so, add it to the map
+        res?.labels?.filter { it.confidence > Properties.getRekognitionConfidenceThreshold() }
+                ?.mapTo(labels) { it.name }
 
         return labels
     }
