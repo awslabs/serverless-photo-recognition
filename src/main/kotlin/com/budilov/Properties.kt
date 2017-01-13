@@ -19,9 +19,10 @@ object Properties {
     private val _USER_POOL_ID = "us-east-1_PGSbCVZ7S"
     private val _COGNITO_POOL_ID_IDP_NAME = "cognito-idp." + _REGION + ".amazonaws.com/" + _USER_POOL_ID
 
-    fun getBucketName() :String {
+    fun getBucketName(): String {
         return _BUCKET_NAME
     }
+
     fun getESServiceUrl(): String {
         return _ES_SERVICE_URL
     }
@@ -42,15 +43,15 @@ object Properties {
         return _REKOGNITION_CONFIDENCE_THRESHOLD
     }
 
-    fun getCognitoPoolIdpName():String {
+    fun getCognitoPoolIdpName(): String {
         return _COGNITO_POOL_ID_IDP_NAME
     }
 
-    fun getCognitoPoolId():String {
+    fun getCognitoPoolId(): String {
         return _COGNITO_POOL_ID
     }
 
-    fun getAccountNumber():String {
+    fun getAccountNumber(): String {
         return _ACCOUNT_NUMBER
     }
 }

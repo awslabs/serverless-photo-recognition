@@ -1,8 +1,8 @@
 package com.budilov.db
 
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider
-import com.budilov.pojo.PictureItem
 import com.budilov.Properties
+import com.budilov.pojo.PictureItem
 import io.searchbox.client.JestClient
 import io.searchbox.client.JestClientFactory
 import io.searchbox.client.config.HttpClientConfig
@@ -91,7 +91,7 @@ class ESPictureService() : DBPictureService {
      */
     override fun search(userId: String, query: String): List<PictureItem> {
         val matchAllQuery = _MATCH_ALL_QUERY.replace("REPLACE_ME", query)
-        println("userid: "  + userId)
+        println("userid: " + userId)
         println("esquery: " + matchAllQuery)
 
         val search = Search.Builder(matchAllQuery)

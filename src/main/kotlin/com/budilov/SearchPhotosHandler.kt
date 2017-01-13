@@ -1,6 +1,9 @@
 package com.budilov
 
+import com.amazonaws.auth.AnonymousAWSCredentials
+import com.amazonaws.services.cognitoidentity.AmazonCognitoIdentity
 import com.amazonaws.services.cognitoidentity.AmazonCognitoIdentityClient
+import com.amazonaws.services.cognitoidentity.model.GetIdRequest
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.budilov.db.ESPictureService
@@ -9,13 +12,6 @@ import com.budilov.pojo.PictureItem
 import com.budilov.s3.S3Service
 import com.google.gson.Gson
 import java.util.*
-import com.amazonaws.auth.AnonymousAWSCredentials
-import com.amazonaws.services.cognitoidentity.AmazonCognitoIdentity
-import com.amazonaws.services.cognitoidentity.model.GetIdResult
-import com.amazonaws.services.cognitoidentity.model.GetIdRequest
-
-
-
 
 
 /**
@@ -31,7 +27,6 @@ import com.amazonaws.services.cognitoidentity.model.GetIdRequest
 class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotosHandler.SearchResponse> {
     val esService = ESPictureService()
     val searchKeyName = "search-key"
-    val userIdName = "user-key"
     val identityClient: AmazonCognitoIdentity = AmazonCognitoIdentityClient(AnonymousAWSCredentials())
 
     data class SearchResponse(var statusCode: Int = 500,
@@ -75,13 +70,13 @@ class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotos
      * The result should be cached so as not to call the cognito service for every single request (although I'm not
      * caching it anywhere right now)
      */
-    fun getCognitoId(authToken:String):String {
+    fun getCognitoId(authToken: String): String {
         println("getCognitoId: enter")
 
         val idRequest = GetIdRequest()
         idRequest.accountId = Properties.getAccountNumber()
         idRequest.identityPoolId = Properties.getCognitoPoolId()
-        var providerTokens:Map<String, String> = mapOf(Pair(Properties.getCognitoPoolIdpName(), authToken))
+        var providerTokens: Map<String, String> = mapOf(Pair(Properties.getCognitoPoolIdpName(), authToken))
 
         idRequest.setLogins(providerTokens);
 
