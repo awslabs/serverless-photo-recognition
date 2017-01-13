@@ -6,7 +6,15 @@ A collection of 3 lambda functions that are invoked by Amazon S3, Amazon API Gat
 to analyze uploaded images in S3 with Amazon Rekognition and save picture metadata to ElasticSearch
 
 ### The Architecture
-![ServerlessPhotoRecognitionArchitecture](/setup/img/ServerlessPhotoRecognitionArchitecture.png?raw=true)
+
+####Adding an image
+![Adding an image](/setup/img/ServerlessPhotoRecognition_Add_Image.png?raw=true)
+
+####Remove an image
+![Remove an image](/setup/img/ServerlessPhotoRecognition_Remove_Image.png?raw=true)
+
+####Searching images
+![Search images](/setup/img/ServerlessPhotoRecognition_Search_Image.png?raw=true)
 
 ### Tech Stack
 #### Required Tools
