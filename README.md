@@ -29,22 +29,20 @@ You need to have the following Amazon Cognito parameters in order to test out th
 * Cognito Pool Id
 * User Pool Id
 
-There are two ways of getting them. The first one is for you to go to (this demo site)[http://cognito.budilov.com], 
-register & login, and then follow the instructions below, or you can setup the demo site yourself by creating 
-all of the required services (this will force you to change the content of the Properties.kt object with your own, 
-updated values). Follow the instructions on [this github repo](https://github.com/awslabs/aws-cognito-angular2-quickstart) if you choose the latter. 
+Follow the instructions on [this github repo](https://github.com/awslabs/aws-cognito-angular2-quickstart) to
+setup your own, fully-functioning, cognito-based website. 
 
-Once you set it up, run ```npm start``` and go to the following url ```http://localhost:4200/``` (or just go (here)[http://cognito.budilov.com]). Register and login, 
-and you will see the following screen once you login:
+Once you set it up, run ```npm start``` and go to the following url ```http://localhost:4200/```. Register and login, 
+and you will see the following screen:
 ![Cognito Screen](/setup/img/cognito-screen.png?raw=true)
 
-Write down the value of cognito ID -- you will need it later on when testing your setup (the <YOUR_COGNITO_ID> value). 
+Write down the value of the cognito ID -- you will need it later on when testing your setup (the <YOUR_COGNITO_ID> value). 
 
 Click on the JWT Tokens tab on the left, then "Id Token" tab and copy the token value. You'll need it
 when running the curl command to search for images (the <JWT_ID_TOKEN> value). 
 
-Note: As noted, if you went the route of setting up your own Amazon Cognito service, you'll need to 
-update the com.budilov.Properties.kt object with the values, otherwise you'll get authentication errors. 
+You'll need to update the com.budilov.Properties.kt object with the newly-created values, otherwise you'll get 
+authentication errors. 
 
 #### AWS Lambda
 For convenience, all 3 AWS Lambda functions are packaged in this project (later on you might want to separate them 
@@ -62,14 +60,15 @@ Build the code with ```./gradlew jar```  and use the generated artifact under
 
 #### Amazon S3
 Setup an S3 bucket where you will upload pictures. You need to create an event that will
-trigger the rekognition-add-pic Lambda function on a POST and rekognition-del-pic on a DELETE
+trigger the _rekognition-add-pic_ Lambda function on a POST and _rekognition-del-pic_ on a DELETE
 
 
 #### Amazon API Gateway
 Setup your API Gateway. See instructions below:
 [API Gateway Proxy Setup](http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-set-up-simple-proxy.html)
 
-Use the swagger definitions included under ```setup/api-gateway-swagger.json```
+You can use the swagger definitions included under ```setup/apigateway-swagger.json```, but make sure to modify the 
+Amazon Cognito configurations before importing the swagger definition -- it'll fail otherwise. 
 
 #### Amazon Rekognition
 You don't need to do anything specific to start using Amazon Rekognition. 
@@ -89,8 +88,36 @@ Upload a picture to the S3 bucket:
 Let's see what the logs tell us (the rekognition-add-pic Lambda function should have kicked off and you should 
 see a log entry with the labels ):
 
-```awslogs get /aws/lambda/rekognition-add-pic ALL -s1h | grep <picturename>```
+```awslogs get /aws/lambda/rekognition-add-pic ALL -s1h```
 
-Now let's search:
+You should see something similar to 
 
-```curl -X POST -H "Authorization: <JWT_ID_TOKEN>" -H "search-key: glasses" -H "Cache-Control: no-cache" "https://e9djdv2xjb.execute-api.us-east-1.amazonaws.com/prd/picture/search"```
+```Saving picture: PictureItem(id=1225251335, s3BucketUrl=my-pics.s3-website-us-east-1.amazonaws.com/usercontent/us-east-1:xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/DSC09211.JPG, labels=[Bbq, Food, Bowl, Dish, Meal, Plate], signedUrl=null)
+```
+
+Now let's search using one of the above labels:
+
+```curl -X POST -H "Authorization: <JWT_ID_TOKEN>" -H "search-key: bbq" -H "Cache-Control: no-cache" "<SEARCH_URL>/prd/picture/search"```
+
+You will get the following json as the result:
+
+```
+[
+  {
+    "id": "123412341234",
+    "s3BucketUrl": "my-pics.s3-website-us-east-1.amazonaws.com/usercontent/us-east-1:xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/DSC09211.JPG",
+    "labels": [
+      "Bbq",
+      "Food",
+      "Bowl",
+      "Dish",
+      "Meal",
+      "Plate"
+    ],
+    "signedUrl": "https://rekognition-pics.s3.amazonaws.com/usercontent/us-east-1%3Adb8b98fa-8d96-4ff9-98d4-abf460f79859/DSC09211.JPG?x-amz-security-token=FQoDYXdzELb%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDK1aumxkOQQiNlDwEiLoAWcJV00GoCsNQTbapygMvvtv0%2BGfjrzTT%2B5sPGr4UPrYXK6Y8cMi9CscswfQhfN3kRJpjdRaFl9eTsnSHrVGdX1C8DvQsKF7vxb52e4soW%2FkmIjdnB6LR1XD7Iv6sRVX0Eq%2BVh8uZUL0TVBhw73bDUMkJodjYsmolHT9g2ZlTwA1Itj9IvZm2OrofAuF%2BG1Lsc9tWidFlXG5ZjbPw8Qb37%2Fn%2Bo9J6m%2BsknwpWCUWwoNbU5MtSSB5hbe7qDp98Z3l%2FNjbFQUs4CLqXcx9nrm%2FXcy%2B2qaWwbcHp1dVVDkTwyEdTxByQLx2xfooqrrhwwU%3D&AWSAccessKeyId=ASIAIUAHRYGHP5P7D4KA&Expires=1484286784&Signature=ESsdWSpxLplh8A%2BlzeyA47BGWLM%3D"
+  }
+]
+```
+
+You should notice that the 'signedUrl' is a temporary signed url that S3 generated in order for you to access this particular
+object. Every time the query runs a signedUrl is generated for each of the resulting pictures. 
