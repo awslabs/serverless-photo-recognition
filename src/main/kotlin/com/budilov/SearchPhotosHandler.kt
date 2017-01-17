@@ -63,7 +63,7 @@ class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotos
             val headers: MutableMap<String, String> = HashMap()
             headers.put("Content-Type", "application/json")
 
-            return SearchResponse(200, headers, Gson().toJson(ResponseBody("Successfully retrieved", pictureList)))
+            return SearchResponse(200, headers, Gson().toJson(ResponseBody("Success", pictureList)))
         }
         return SearchResponse(400, null, """{"message":"$_RESPONSE_EMPTY"}""")
     }
