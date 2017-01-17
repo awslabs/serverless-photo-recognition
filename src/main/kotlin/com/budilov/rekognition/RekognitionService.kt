@@ -24,26 +24,19 @@ class RekognitionService {
      * bucket
      */
     fun getLabels(bucketName: String, objectName: String): List<String> {
-        println("bucketName: " + bucketName + " object: " + objectName)
-
         val s3Object = S3Object().withBucket(bucketName).withName(objectName)
 
         val req = DetectLabelsRequest()
         req.image = Image().withS3Object(s3Object)
 
-        rekognitionClient.setEndpoint(Properties.getRekognitionUrl())
-        rekognitionClient.setSignerRegionOverride(Properties.getRegion())
+        rekognitionClient.setEndpoint(Properties._REKOGNITION_URL)
+        rekognitionClient.signerRegionOverride = Properties._REGION
 
-        val res = try {
-            rekognitionClient.detectLabels(req)
-        } catch (e: Exception) {
-            println("Exception: " + e.toString())
-            null
-        }
+        val res = rekognitionClient.detectLabels(req)
 
         val labels: MutableList<String> = arrayListOf()
-        // Make sure that the confidence level of the labe is above our threshold...if so, add it to the map
-        res?.labels?.filter { it.confidence > Properties.getRekognitionConfidenceThreshold() }
+        // Make sure that the confidence level of the label is above our threshold...if so, add it to the map
+        res?.labels?.filter { it.confidence >= Properties._REKOGNITION_CONFIDENCE_THRESHOLD }
                 ?.mapTo(labels) { it.name }
 
         return labels

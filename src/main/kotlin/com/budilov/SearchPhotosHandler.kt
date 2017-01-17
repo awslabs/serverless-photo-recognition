@@ -25,20 +25,24 @@ import java.util.*
  */
 
 class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotosHandler.SearchResponse> {
-    val esService = ESPictureService()
-    val searchKeyName = "search-key"
-    val identityClient: AmazonCognitoIdentity = AmazonCognitoIdentityClient(AnonymousAWSCredentials())
+    private val esService = ESPictureService()
+    private val searchKeyName = "search-key"
+    private val identityClient: AmazonCognitoIdentity = AmazonCognitoIdentityClient(AnonymousAWSCredentials())
 
-    data class SearchResponse(var statusCode: Int = 500,
-                              var headers: MutableMap<String, String> = HashMap<String, String>(),
-                              var body: String? = null)
+    private val _RESPONSE_EMPTY = "Input parameters weren't there"
+
+    data class SearchResponse(val statusCode: Int,
+                              val headers: MutableMap<String, String>?,
+                              val body: String)
+
+    data class ResponseBody(val message: String, val pictures: List<PictureItem>)
 
     /**
      * 1. Get the request from API Gateway. Unmarshal (automatically) the request
      * 2. Get the
      */
     override fun handleRequest(request: ApigatewayRequest.Input?, context: Context?): SearchResponse? {
-        val response = SearchResponse()
+
         val logger = context?.logger
 
         logger?.log("request payload: " + Gson().toJson(request))
@@ -53,15 +57,15 @@ class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotos
             for (picture in pictureList) {
                 logger?.log("object: " + picture.s3BucketUrl.substringAfter("/"))
 
-                picture.signedUrl = S3Service.getSignedUrl(Properties.getBucketName(),
+                picture.signedUrl = S3Service.getSignedUrl(Properties._BUCKET_NAME,
                         picture.s3BucketUrl.substringAfter("/")).toString()
             }
-            response.statusCode = 200
-            response.headers.put("Content-Type", "application/json")
-            response.body = Gson().toJson(pictureList)
-        }
+            val headers: MutableMap<String, String> = HashMap()
+            headers.put("Content-Type", "application/json")
 
-        return response
+            return SearchResponse(200, headers, Gson().toJson(ResponseBody("Successfully retrieved", pictureList)))
+        }
+        return SearchResponse(400, null, """{"message":"$_RESPONSE_EMPTY"}""")
     }
 
     /**
@@ -71,14 +75,10 @@ class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotos
      * caching it anywhere right now)
      */
     fun getCognitoId(authToken: String): String {
-        println("getCognitoId: enter")
-
         val idRequest = GetIdRequest()
-        idRequest.accountId = Properties.getAccountNumber()
-        idRequest.identityPoolId = Properties.getCognitoPoolId()
-        var providerTokens: Map<String, String> = mapOf(Pair(Properties.getCognitoPoolIdpName(), authToken))
-
-        idRequest.logins = providerTokens
+        idRequest.accountId = Properties._ACCOUNT_NUMBER
+        idRequest.identityPoolId = Properties._COGNITO_POOL_ID
+        idRequest.logins = mapOf(Pair(Properties._COGNITO_POOL_ID_IDP_NAME, authToken))
 
         val idResp = identityClient.getId(idRequest)
 

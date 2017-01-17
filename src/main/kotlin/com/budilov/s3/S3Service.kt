@@ -4,13 +4,14 @@ import com.amazonaws.HttpMethod
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
+import com.budilov.Properties
 import java.net.URL
+import java.time.Duration
+import java.time.Instant
 import java.util.*
 
 /**
  * Created by Vladimir Budilov
-
-
  */
 object S3Service {
 
@@ -19,21 +20,17 @@ object S3Service {
     /**
      * Returns the signed url of an object
      */
-    public fun getSignedUrl(bucketName: String, objectKey: String): URL {
+    fun getSignedUrl(bucketName: String, objectKey: String): URL {
 
         val generatePresignedUrlRequest = GeneratePresignedUrlRequest(bucketName, objectKey)
         generatePresignedUrlRequest.method = HttpMethod.GET
         generatePresignedUrlRequest.expiration = getExpiration()
 
-        val s = S3Service.s3Client.generatePresignedUrl(generatePresignedUrlRequest)
-
-        return s
+        return S3Service.s3Client.generatePresignedUrl(generatePresignedUrlRequest)
     }
 
     /**
      * Returns the default expiration
-     *
-     * Value hardcoded to 1 hour
      *
      */
     private fun getExpiration(): Date {
@@ -44,5 +41,4 @@ object S3Service {
 
         return expiration
     }
-
 }

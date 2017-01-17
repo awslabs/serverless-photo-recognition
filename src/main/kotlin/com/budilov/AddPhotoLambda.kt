@@ -15,8 +15,8 @@ import java.net.URLDecoder
  */
 class AddPhotoLambda : RequestHandler<S3Event, String> {
 
-    val rekognition = RekognitionService()
-    val esService = ESPictureService()
+    private val rekognition = RekognitionService()
+    private val esService = ESPictureService()
 
     /**
      * 1. Get the s3 bucket and object name in question
@@ -25,25 +25,25 @@ class AddPhotoLambda : RequestHandler<S3Event, String> {
      * 4. Save the bucket/object & labels into ElasticSearch
      */
     override fun handleRequest(s3event: S3Event, context: Context): String {
-        val record = s3event.getRecords().get(0)
+        val record = s3event.records.first()
         val logger = context.logger
-        val srcBucket = record.getS3().getBucket().name
+        val srcBucket = record.s3.bucket.name
 
         // Object key may have spaces or unicode non-ASCII characters.
         var srcKeyEncoded = record.s3.`object`.key
                 .replace('+', ' ')
 
         val srcKey = URLDecoder.decode(srcKeyEncoded, "UTF-8")
-        logger.log("bucket: " + srcBucket + " key: " + srcKey)
+        logger.log("bucket: ${srcBucket}, key: ${srcKey}")
 
         // Get the cognito id from the object name (it's a prefix)
         val cognitoId = srcKey.split("/")[1]
-        logger.log("Cognito ID: " + cognitoId)
+        logger.log("Cognito ID: ${cognitoId}")
 
         val labels = rekognition.getLabels(srcBucket, srcKey)
         if (labels.isNotEmpty()) {
-            val picture = PictureItem(srcKeyEncoded.hashCode().toString(), srcBucket + Properties.getBucketSuffix() + "/" + srcKey, labels, null)
-            logger.log("Saving picture: " + picture)
+            val picture = PictureItem(srcKeyEncoded.hashCode().toString(), srcBucket + Properties._BUCKET_URL + "/" + srcKey, labels, null)
+            logger.log("Saving picture: ${picture}")
 
             // Save the picture to ElasticSearch
             esService.add(cognitoId, picture)

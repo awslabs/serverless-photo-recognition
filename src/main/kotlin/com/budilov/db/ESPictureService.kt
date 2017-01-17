@@ -25,34 +25,22 @@ import java.time.ZoneOffset
  *
  */
 
-class ESPictureService() : DBPictureService {
+class ESPictureService : DBPictureService {
 
-    val client: JestClient
-    val _MATCH_ALL_QUERY = "{\"query\": { \"match\": { \"labels\": \" REPLACE_ME \" } }, \"size\":30}"
+    private val client: JestClient
 
-    val _DEFAULT_INDEX = "pictures"
+    private val _DEFAULT_INDEX = "pictures"
 
     init {
         val clock = { LocalDateTime.now(ZoneOffset.UTC) }
 
         // Sig4
-        val awsSigner = AWSSigner(EnvironmentVariableCredentialsProvider(), Properties.getRegion(), "es", clock)
+        val awsSigner = AWSSigner(EnvironmentVariableCredentialsProvider(), Properties._REGION, "es", clock)
 
         // Adding a request interceptor to sign the ES requests with Sig4
-        val requestInterceptor = AWSSigningRequestInterceptor(awsSigner)
-        val factory = object : JestClientFactory() {
-            override fun configureHttpClient(builder: HttpClientBuilder): HttpClientBuilder {
-                builder.addInterceptorLast(requestInterceptor)
-                return builder
-            }
+        val factory = getJestFactory(AWSSigningRequestInterceptor(awsSigner))
 
-            override fun configureHttpClient(builder: HttpAsyncClientBuilder): HttpAsyncClientBuilder {
-                builder.addInterceptorLast(requestInterceptor)
-                return builder
-            }
-        }
-
-        factory.setHttpClientConfig(HttpClientConfig.Builder(Properties.getESServiceUrl())
+        factory.setHttpClientConfig(HttpClientConfig.Builder(Properties._ES_SERVICE_URL)
                 .multiThreaded(true)
                 .build())
 
@@ -90,9 +78,7 @@ class ESPictureService() : DBPictureService {
      * returns List<PictureItem>
      */
     override fun search(userId: String, query: String): List<PictureItem> {
-        val matchAllQuery = _MATCH_ALL_QUERY.replace("REPLACE_ME", query)
-        println("userid: " + userId)
-        println("esquery: " + matchAllQuery)
+        val matchAllQuery = getMatchAllQuery(query)
 
         val search = Search.Builder(matchAllQuery)
                 // multiple index or types can be added.
@@ -111,13 +97,27 @@ class ESPictureService() : DBPictureService {
      * For now it always returns true
      */
     override fun add(userId: String, item: PictureItem): Boolean {
-        println("Adding picture")
         val index = Index.Builder(item).index(_DEFAULT_INDEX).type(userId).build()
         val result = client.execute(index)
 
-        println("Result error: " + result.errorMessage)
-        println("Result id: " + result.id)
-
         return result.isSucceeded
+    }
+
+    private fun getMatchAllQuery(labels: String, pageSize: Int = 30): String {
+        return """{"query": { "match": { "labels": "$labels" } }, "size":$pageSize}"""
+    }
+
+    private fun getJestFactory(requestInterceptor: AWSSigningRequestInterceptor): JestClientFactory {
+        return object : JestClientFactory() {
+            override fun configureHttpClient(builder: HttpClientBuilder): HttpClientBuilder {
+                builder.addInterceptorLast(requestInterceptor)
+                return builder
+            }
+
+            override fun configureHttpClient(builder: HttpAsyncClientBuilder): HttpAsyncClientBuilder {
+                builder.addInterceptorLast(requestInterceptor)
+                return builder
+            }
+        }
     }
 }

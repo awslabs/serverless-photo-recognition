@@ -155,6 +155,7 @@ The provided sample policy is required to allow only the Lambda functions that a
 have access to the Elasticsearch cluster
 
 ### Let's test it
+
 Upload a picture to the S3 bucket:
 
 ```aws s3 cp <IMAGE> s3://<YOUR_BUCKET>/usercontent/<YOUR_COGNITO_ID>/```
@@ -194,3 +195,9 @@ You will get the following json as the result:
 
 You should notice that the 'signedUrl' is a temporary signed url that S3 generated in order for you to access this particular
 object. Every time the query runs a signedUrl is generated for each of the resulting pictures. 
+
+
+Let's delete the picture to test the delete functionality:
+
+```aws s3 rm s3://<YOUR_BUCKET>/usercontent/<YOUR_COGNITO_ID>/<IMAGE>```
+

@@ -2,7 +2,7 @@ group 'com.budilov'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.0.0'
+    ext.kotlin_version = '1.0.6'
     ext.aws_version = '1.11.63'
     ext.jest_version = '2.0.3'
     ext.gradle_deps = '0.6.0.RELEASE'
