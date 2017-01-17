@@ -156,12 +156,12 @@ have access to the Elasticsearch cluster
 
 ### Let's test it
 
-Upload a picture to the S3 bucket:
+_Upload a picture to the S3 bucket_
 
 ```aws s3 cp <IMAGE> s3://<YOUR_BUCKET>/usercontent/<YOUR_COGNITO_ID>/```
 
 Let's see what the logs tell us (the rekognition-add-pic Lambda function should have kicked off and you should 
-see a log entry with the labels ):
+see a log entry with the labels )
 
 ```awslogs get /aws/lambda/rekognition-add-pic ALL -s1h```
 
@@ -169,7 +169,7 @@ You should see something similar to
 
 ```Saving picture: PictureItem(id=1225251335, s3BucketUrl=my-pics.s3-website-us-east-1.amazonaws.com/usercontent/us-east-1:xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/DSC09211.JPG, labels=[Bbq, Food, Bowl, Dish, Meal, Plate], signedUrl=null)```
 
-Now let's search using one of the above labels:
+_Now let's search using one of the above labels_
 
 ```curl -X POST -H "Authorization: <JWT_ID_TOKEN>" -H "search-key: bbq" -H "Cache-Control: no-cache" "<SEARCH_URL>/prd/picture/search"```
 
@@ -197,7 +197,7 @@ You should notice that the 'signedUrl' is a temporary signed url that S3 generat
 object. Every time the query runs a signedUrl is generated for each of the resulting pictures. 
 
 
-Let's delete the picture to test the delete functionality:
+_Let's delete the picture to test the delete functionality_
 
 ```aws s3 rm s3://<YOUR_BUCKET>/usercontent/<YOUR_COGNITO_ID>/<IMAGE>```
 
