@@ -4,9 +4,12 @@
     {
       "Effect": "Allow",
       "Action": [
-        "rekognition:*"
+        "mobileanalytics:PutEvents",
+        "cognito-sync:*"
       ],
-      "Resource": "*"
+      "Resource": [
+        "*"
+      ]
     }
   ]
 }

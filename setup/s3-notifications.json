@@ -1,0 +1,14 @@
+{
+  "LambdaFunctionConfigurations": [
+    {
+      "Id": "PictureRemoved",
+      "LambdaFunctionArn": "REKOGNITION_DEL_FUNCTION_ARN_REPLACE_ME",
+      "Events": ["s3:ObjectRemoved:*"]
+    },
+    {
+      "Id": "PictureAdded",
+      "LambdaFunctionArn": "REKOGNITION_ADD_FUNCTION_ARN_REPLACE_ME",
+      "Events": ["s3:ObjectCreated:*"]
+    }
+  ]
+}

@@ -2,9 +2,9 @@
   "swagger": "2.0",
   "info": {
     "version": "2017-01-12T02:52:43Z",
-    "title": "cognito"
+    "title": "cognitorekognition"
   },
-  "host": "e9djdv2xjb.execute-api.us-east-1.amazonaws.com",
+  "host": "e9djdv2xjb.execute-api.REGION_REPLACE_ME.amazonaws.com",
   "basePath": "/prd",
   "schemes": [
     "https"
@@ -88,7 +88,7 @@
               }
             }
           },
-          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:540403165297:function:rekognition-api/invocations",
+          "uri": "arn:aws:apigateway:REGION_REPLACE_ME:lambda:path/2015-03-31/functions/REKOGNITION_SEARCH_FUNCTION_ARN_REPLACE_ME/invocations",
           "passthroughBehavior": "when_no_match",
           "httpMethod": "POST",
           "contentHandling": "CONVERT_TO_TEXT",
@@ -139,77 +139,6 @@
           "type": "mock"
         }
       }
-    },
-    "/picture/upload": {
-      "post": {
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "200 response",
-            "schema": {
-              "$ref": "#/definitions/Empty"
-            }
-          }
-        },
-        "x-amazon-apigateway-integration": {
-          "responses": {
-            "default": {
-              "statusCode": "200"
-            }
-          },
-          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:540403165297:function:rekognition-add-pic/invocations",
-          "passthroughBehavior": "when_no_match",
-          "httpMethod": "POST",
-          "contentHandling": "CONVERT_TO_TEXT",
-          "type": "aws_proxy"
-        }
-      },
-      "options": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "200 response",
-            "schema": {
-              "$ref": "#/definitions/Empty"
-            },
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Methods": {
-                "type": "string"
-              },
-              "Access-Control-Allow-Headers": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "x-amazon-apigateway-integration": {
-          "responses": {
-            "default": {
-              "statusCode": "200",
-              "responseParameters": {
-                "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
-                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'",
-                "method.response.header.Access-Control-Allow-Origin": "'*'"
-              }
-            }
-          },
-          "requestTemplates": {
-            "application/json": "{\"statusCode\": 200}"
-          },
-          "passthroughBehavior": "when_no_match",
-          "type": "mock"
-        }
-      }
     }
   },
   "securityDefinitions": {
@@ -220,7 +149,7 @@
       "x-amazon-apigateway-authtype": "cognito_user_pools",
       "x-amazon-apigateway-authorizer": {
         "providerARNs": [
-          "arn:aws:cognito-idp:us-east-1:540403165297:userpool/us-east-1_PGSbCVZ7S"
+          "POOL_ARN_REPLACE_ME"
         ],
         "type": "cognito_user_pools"
       }
