@@ -4,10 +4,10 @@
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::ACCOUNT_ID_REPLACE_ME:role/s3-to-es"
+        "AWS": "arn:aws:iam::ACCOUNT_NAME_REPLACE_ME:role/ROLE_NAME_REPLACE_ME"
       },
       "Action": "es:*",
-      "Resource": "ELASTICSEARCH_DOMAIN_ARN_REPLACE_ME/*"
+      "Resource": "arn:aws:es:REGION_REPLACE_ME:ACCOUNT_NAME_REPLACE_ME:domain/ES_DOMAIN_NAME_REPLACE_ME/*"
     },
     {
       "Sid": "",
@@ -16,10 +16,10 @@
         "AWS": "*"
       },
       "Action": "es:*",
-      "Resource": "ELASTICSEARCH_DOMAIN_ARN_REPLACE_ME/*",
+      "Resource": "arn:aws:es:REGION_REPLACE_ME:ACCOUNT_NAME_REPLACE_ME:domain/ES_DOMAIN_NAME_REPLACE_ME/*",
       "Condition": {
         "IpAddress": {
-          "aws:SourceIp": "YOUR_EXTERNAL_IP_ADDRESS_REPLACE_ME"
+          "aws:SourceIp": "EXTERNAL_IP_ADDRESS_REPLACE_ME"
         }
       }
     }

@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
 ROOT_NAME=$1
-# Bucket name must be all lowercase, and start/end with lowecase letter or number
-# $(echo...) code to work with versions of bash older than 4.0
-BUCKET_NAME=budilov-$(echo "$ROOT_NAME" | tr '[:upper:]' '[:lower:]')
 TABLE_NAME=LoginTrail$ROOT_NAME
 
 # Replace with your 12-digit AWS account ID (e.g., 123456789012)
@@ -12,14 +9,6 @@ ROLE_NAME_PREFIX=$ROOT_NAME
 POOL_NAME=$ROOT_NAME
 IDENTITY_POOL_NAME=$ROOT_NAME
 REGION=$3
-
-# Create the bucket
-aws s3 mb s3://$BUCKET_NAME/ --region $REGION
-# Add the ‘website’ configuration and bucket policy
-aws s3 website s3://$BUCKET_NAME/ --index-document index.html --error-document index.html
-cat s3-bucket-policy.json | sed 's/BUCKET_NAME/'$BUCKET_NAME'/' > /tmp/s3-bucket-policy.json
-aws s3api put-bucket-policy --bucket $BUCKET_NAME --policy file:///tmp/s3-bucket-policy.json
-#Build the project and sync it up to the bucket
 
 # Create DDB Table
 aws dynamodb create-table \
@@ -35,6 +24,7 @@ aws dynamodb create-table \
 # Create a Cognito Identity and Set roles
 aws cognito-identity create-identity-pool --identity-pool-name $IDENTITY_POOL_NAME --allow-unauthenticated-identities --region $REGION| grep IdentityPoolId | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//' > /tmp/poolId
 identityPoolId=$(cat /tmp/poolId)
+echo $identityPoolId > /tmp/identityPoolId
 
 # Create an IAM role for unauthenticated users
 cat unauthrole-trust-policy.json | sed 's/IDENTITY_POOL/'$identityPoolId'/' > /tmp/unauthrole-trust-policy.json
