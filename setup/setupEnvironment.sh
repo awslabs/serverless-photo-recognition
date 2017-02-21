@@ -5,16 +5,15 @@ echo "Using the following 'root name' for your resources, such as S3 bucket: " $
 
 BUCKET_NAME=rekognition-${ROOT_NAME}
 REGION=us-east-1
-ES_DOMAIN_NAME=rekognition # if you change this value, you'll need to change the values in the elasticsearch_service_policy.json file
 EXTERNAL_IP_ADDRESS=$(curl ipinfo.io/ip)
 ACCOUNT_NUMBER=$(aws ec2 describe-security-groups --group-names 'Default' --query 'SecurityGroups[0].OwnerId' --output text)
 COGNITO_POOL_NAME_REPLACE_ME=${ROOT_NAME}rek
 
 # Lambda
 JAR_LOCATION=../build/libs/rekognition-rest-1.0-SNAPSHOT.jar
-FUNCTION_REK_SEARCH=rekognition-search-picture
-FUNCTION_REK_ADD=rekognition-add-picture
-FUNCTION_REK_DEL=rekognition-del-picture
+FUNCTION_REK_SEARCH=rekognition-search-picture-${ROOT_NAME}
+FUNCTION_REK_ADD=rekognition-add-picture-${ROOT_NAME}
+FUNCTION_REK_DEL=rekognition-del-picture-${ROOT_NAME}
 FUNCTION_REK_SEARCH_HANDLER=com.budilov.SearchPhotosHandler
 FUNCTION_REK_ADD_HANDLER=com.budilov.AddPhotoLambda
 FUNCTION_REK_DEL_HANDLER=com.budilov.RemovePhotoLambda
@@ -143,6 +142,7 @@ echo "Deploying the gateway with id of " ${GATEWAY_ID} " to prd"
 aws apigateway create-deployment --rest-api-id ${GATEWAY_ID} --stage-name prod
 
 # Setup Elasticsearch
+echo "Setup Elasticsearch"
 aws es create-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --elasticsearch-version 5.1 --elasticsearch-cluster-config InstanceType=t2.small.elasticsearch,InstanceCount=1 --ebs-options EBSEnabled=true,VolumeType=standard,VolumeSize=10
 cat elasticsearch_service_policy.json |
     sed 's#ACCOUNT_NAME_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' |
@@ -151,6 +151,13 @@ cat elasticsearch_service_policy.json |
     sed 's#ES_DOMAIN_NAME_REPLACE_ME#'${ES_DOMAIN_NAME}'#g' |
     sed 's#EXTERNAL_IP_ADDRESS_REPLACE_ME#'${EXTERNAL_IP_ADDRESS}'#g' > /tmp/elasticsearch_service_policy.json
 aws es update-elasticsearch-domain-config --domain-name ${ES_DOMAIN_NAME} --access-policies file:///tmp/elasticsearch_service_policy.json
+
+## We need the endpoint url now, but the ES domain is most-likely processing right now. Let's wait until it finishes
+while [ 'True' == $(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query  "DomainStatus.Processing" --output text) ];
+do
+    echo "Waiting for the Elasticsearch domain to finish processing. Sleeping..."
+    sleep 30
+done
 
 ES_ENDPOINT=$(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query "DomainStatus.Endpoint" --output text)
 
