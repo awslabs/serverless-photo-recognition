@@ -32,7 +32,7 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 ### AWS Setup
 There are multiple AWS services involved here. Follow the below instructions for each one of them 
 (For a simple way to get started you can just run ```./setup/setupEnvironment.sh```. The contents of the 
-```Properties.kt``` file are modified automatically for you, and deployed).
+```Properties.kt``` file are modified automatically for you, and deployed. Then just skip to the _Let's test it_).
 
 #### Amazon Cognito
 You need to have the following Amazon Cognito parameters in order to test out this setup: 

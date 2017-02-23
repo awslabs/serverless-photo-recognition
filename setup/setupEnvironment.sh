@@ -19,7 +19,7 @@ FUNCTION_REK_ADD_HANDLER=com.budilov.AddPhotoLambda
 FUNCTION_REK_DEL_HANDLER=com.budilov.RemovePhotoLambda
 
 # IAM
-ROLE_NAME=s3-to-es
+ROLE_NAME=lambda-to-es-rek-s3
 
 # ES
 ES_DOMAIN_NAME=rekognition${ROOT_NAME}
@@ -34,7 +34,7 @@ createLambdaFunction() {
     aws lambda create-function --region $1 \
         --function-name $2 \
         --zip-file fileb://$3 \
-        --role arn:aws:iam::${ACCOUNT_NUMBER}:role/s3-to-es \
+        --role arn:aws:iam::${ACCOUNT_NUMBER}:role/${ROLE_NAME} \
         --handler $4 \
         --runtime java8 \
         --memory-size 192 \
@@ -67,10 +67,10 @@ cd ..
 POOL_ARN_REPLACE_ME=arn:aws:cognito-idp:${REGION}:${ACCOUNT_NUMBER}:userpool/${USER_POOL_ID}
 
 # Create IAM roles
-aws iam create-role --role-name s3-to-es --assume-role-policy-document file://s3-to-es-role-trust-relationship.json
-aws iam attach-role-policy --role-name s3-to-es --policy-arn arn:aws:iam::aws:policy/AmazonESFullAccess
-aws iam attach-role-policy --role-name s3-to-es --policy-arn arn:aws:iam::aws:policy/AmazonRekognitionFullAccess
-aws iam attach-role-policy --role-name s3-to-es --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+aws iam create-role --role-name ${ROLE_NAME} --assume-role-policy-document file://s3-to-es-role-trust-relationship.json
+aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonESFullAccess
+aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonRekognitionFullAccess
+aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
 
 # Create the photos bucket
 aws s3 mb s3://$BUCKET_NAME/ --region $REGION
@@ -83,13 +83,13 @@ chmod 755 gradlew
 cd setup
 
 ## Create and deploy
-createLambdaFunction ${REGION} ${FUNCTION_REK_ADD} ${JAR_LOCATION} ${FUNCTION_REK_ADD_HANDLER} > /tmp/addlambdaoutput
+createLambdaFunction ${REGION} ${FUNCTION_REK_ADD} ${JAR_LOCATION} ${FUNCTION_REK_ADD_HANDLER} ${BUCKET_NAME}> /tmp/addlambdaoutput
 REKOGNITION_ADD_FUNCTION_ARN=$(grep FunctionArn /tmp/addlambdaoutput | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//')
 
-createLambdaFunction ${REGION} ${FUNCTION_REK_DEL} ${JAR_LOCATION} ${FUNCTION_REK_DEL_HANDLER} > /tmp/dellambdaoutput
+createLambdaFunction ${REGION} ${FUNCTION_REK_DEL} ${JAR_LOCATION} ${FUNCTION_REK_DEL_HANDLER} ${BUCKET_NAME} > /tmp/dellambdaoutput
 REKOGNITION_DELETE_FUNCTION_ARN=$(grep FunctionArn /tmp/dellambdaoutput | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//')
 
-createLambdaFunction ${REGION} ${FUNCTION_REK_SEARCH} ${JAR_LOCATION} ${FUNCTION_REK_SEARCH_HANDLER} > /tmp/searchlambdaoutput
+createLambdaFunction ${REGION} ${FUNCTION_REK_SEARCH} ${JAR_LOCATION} ${FUNCTION_REK_SEARCH_HANDLER} ${BUCKET_NAME} > /tmp/searchlambdaoutput
 REKOGNITION_SEARCH_FUNCTION_ARN=$(grep FunctionArn /tmp/searchlambdaoutput | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//')
 
 # Setup the S3 events
@@ -122,24 +122,6 @@ cat s3-notifications.json |
 
 echo "Creating the events"
 aws s3api put-bucket-notification-configuration --bucket ${BUCKET_NAME} --notification-configuration file:///tmp/s3-notifications.json
-
-# Import your API Gateway Swagger template. This command can run after the Cognito User Pool is created
-## First substitute values in the swagger file: COGNITO_POOL_NAME_REPLACE_ME,
-## POOL_ARN_REPLACE_ME, REKOGNITION_ADD_FUNCTION, REKOGNITION_DELETE_FUNCTION, REKOGNITION_SEARCH_FUNCTION
-echo "Preparing the swagger template. REGION: " ${REGION} " COGNITO_POOL_NAME: " ${COGNITO_POOL_NAME_REPLACE_ME} " POOL_ARN_REPLACE_ME: " ${POOL_ARN_REPLACE_ME} " REKOGNITION_SEARCH_FUNCTION_ARN: " ${REKOGNITION_SEARCH_FUNCTION_ARN}
-cat apigateway-swagger.json |
-    sed 's#REGION_REPLACE_ME#'${REGION}'#g' |
-    sed 's#COGNITO_POOL_NAME_REPLACE_ME#'${COGNITO_POOL_NAME_REPLACE_ME}'#g' |
-    sed 's#POOL_ARN_REPLACE_ME#'${POOL_ARN_REPLACE_ME}'#g' |
-    sed 's#REKOGNITION_SEARCH_FUNCTION_ARN_REPLACE_ME#'${REKOGNITION_SEARCH_FUNCTION_ARN}'#g' > /tmp/apigateway-swagger.json
-
-echo "Importing the swagger template"
-aws apigateway import-rest-api --body 'file:///tmp/apigateway-swagger.json' --region ${REGION} > /tmp/apigateway-import-api
-GATEWAY_ID=$(cat /tmp/apigateway-import-api | grep id | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//')
-
-## Deploy to 'prd' stage
-echo "Deploying the gateway with id of " ${GATEWAY_ID} " to prd"
-aws apigateway create-deployment --rest-api-id ${GATEWAY_ID} --stage-name prod
 
 # Setup Elasticsearch
 echo "Setup Elasticsearch"
@@ -177,5 +159,23 @@ cd setup
 updateFunction ${REGION} ${FUNCTION_REK_ADD} ${JAR_LOCATION}
 updateFunction ${REGION} ${FUNCTION_REK_DEL} ${JAR_LOCATION}
 updateFunction ${REGION} ${FUNCTION_REK_SEARCH} ${JAR_LOCATION}
+
+# Import your API Gateway Swagger template. This command can run after the Cognito User Pool is created
+## First substitute values in the swagger file: COGNITO_POOL_NAME_REPLACE_ME,
+## POOL_ARN_REPLACE_ME, REKOGNITION_ADD_FUNCTION, REKOGNITION_DELETE_FUNCTION, REKOGNITION_SEARCH_FUNCTION
+echo "Preparing the swagger template. REGION: " ${REGION} " COGNITO_POOL_NAME: " ${COGNITO_POOL_NAME_REPLACE_ME} " POOL_ARN_REPLACE_ME: " ${POOL_ARN_REPLACE_ME} " REKOGNITION_SEARCH_FUNCTION_ARN: " ${REKOGNITION_SEARCH_FUNCTION_ARN}
+cat apigateway-swagger.json |
+    sed 's#REGION_REPLACE_ME#'${REGION}'#g' |
+    sed 's#COGNITO_POOL_NAME_REPLACE_ME#'${COGNITO_POOL_NAME_REPLACE_ME}'#g' |
+    sed 's#POOL_ARN_REPLACE_ME#'${POOL_ARN_REPLACE_ME}'#g' |
+    sed 's#REKOGNITION_SEARCH_FUNCTION_ARN_REPLACE_ME#'${REKOGNITION_SEARCH_FUNCTION_ARN}'#g' > /tmp/apigateway-swagger.json
+
+echo "Importing the swagger template"
+aws apigateway import-rest-api --body 'file:///tmp/apigateway-swagger.json' --region ${REGION} > /tmp/apigateway-import-api
+GATEWAY_ID=$(cat /tmp/apigateway-import-api | grep id | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//')
+
+## Deploy to 'prd' stage
+echo "Deploying the gateway with id of " ${GATEWAY_ID} " to prd"
+aws apigateway create-deployment --rest-api-id ${GATEWAY_ID} --stage-name prod
 
 echo "You're done"

@@ -9,7 +9,7 @@ ROLE_NAME_PREFIX=$ROOT_NAME
 POOL_NAME=$ROOT_NAME
 IDENTITY_POOL_NAME=$ROOT_NAME
 REGION=$3
-
+PICTURE_BUCKET_NAME=$4
 # Create DDB Table
 aws dynamodb create-table \
     --table-name $TABLE_NAME \
@@ -34,7 +34,7 @@ aws iam put-role-policy --role-name $ROLE_NAME_PREFIX-unauthenticated-role --pol
 # Create an IAM role for authenticated users
 cat authrole-trust-policy.json | sed 's/IDENTITY_POOL/'$identityPoolId'/' > /tmp/authrole-trust-policy.json
 aws iam create-role --role-name $ROLE_NAME_PREFIX-authenticated-role --assume-role-policy-document file:///tmp/authrole-trust-policy.json
-cat authrole.json | sed 's/TABLE_NAME/'$TABLE_NAME'/' | sed 's/ACCOUNT_NUMBER/'$AWS_ACCOUNT'/' | sed 's/REGION/'$REGION'/' > /tmp/authrole.json
+cat authrole.json | sed 's/TABLE_NAME/'$TABLE_NAME'/' | sed 's/ACCOUNT_NUMBER/'$AWS_ACCOUNT'/' | sed 's/REGION/'$REGION'/' | sed 's/PICTURES_BUCKET_NAME_REPLACE_ME/'$4'/'> /tmp/authrole.json
 aws iam put-role-policy --role-name $ROLE_NAME_PREFIX-authenticated-role --policy-name CognitoPolicy --policy-document file:///tmp/authrole.json
 
 # Create the user pool
