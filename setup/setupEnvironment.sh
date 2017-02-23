@@ -57,7 +57,7 @@ updateFunction() {
 echo "Creating the Cognito resources"
 cd ./cognito-quickstart/
 chmod 755 createResources.sh
-./createResources.sh ${COGNITO_POOL_NAME_REPLACE_ME} ${ACCOUNT_NUMBER} ${REGION}
+./createResources.sh ${COGNITO_POOL_NAME_REPLACE_ME} ${ACCOUNT_NUMBER} ${REGION} ${BUCKET_NAME}
 USER_POOL_ID=$(cat /tmp/userPoolId)
 COGNITO_POOL_ID=$(cat /tmp/identityPoolId)
 echo "Cognito User Pool Id: " ${USER_POOL_ID}
@@ -83,13 +83,13 @@ chmod 755 gradlew
 cd setup
 
 ## Create and deploy
-createLambdaFunction ${REGION} ${FUNCTION_REK_ADD} ${JAR_LOCATION} ${FUNCTION_REK_ADD_HANDLER} ${BUCKET_NAME}> /tmp/addlambdaoutput
+createLambdaFunction ${REGION} ${FUNCTION_REK_ADD} ${JAR_LOCATION} ${FUNCTION_REK_ADD_HANDLER} > /tmp/addlambdaoutput
 REKOGNITION_ADD_FUNCTION_ARN=$(grep FunctionArn /tmp/addlambdaoutput | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//')
 
-createLambdaFunction ${REGION} ${FUNCTION_REK_DEL} ${JAR_LOCATION} ${FUNCTION_REK_DEL_HANDLER} ${BUCKET_NAME} > /tmp/dellambdaoutput
+createLambdaFunction ${REGION} ${FUNCTION_REK_DEL} ${JAR_LOCATION} ${FUNCTION_REK_DEL_HANDLER} > /tmp/dellambdaoutput
 REKOGNITION_DELETE_FUNCTION_ARN=$(grep FunctionArn /tmp/dellambdaoutput | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//')
 
-createLambdaFunction ${REGION} ${FUNCTION_REK_SEARCH} ${JAR_LOCATION} ${FUNCTION_REK_SEARCH_HANDLER} ${BUCKET_NAME} > /tmp/searchlambdaoutput
+createLambdaFunction ${REGION} ${FUNCTION_REK_SEARCH} ${JAR_LOCATION} ${FUNCTION_REK_SEARCH_HANDLER} > /tmp/searchlambdaoutput
 REKOGNITION_SEARCH_FUNCTION_ARN=$(grep FunctionArn /tmp/searchlambdaoutput | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//')
 
 # Setup the S3 events
