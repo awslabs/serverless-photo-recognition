@@ -204,9 +204,6 @@ sed  -i 's#USER_POOL_ID_REPLACE_ME#'${USER_POOL_ID}'#g' ../src/main/kotlin/com/b
 sed  -i 's#ES_SERVICE_URL_REPLACE_ME#'${ES_ENDPOINT}'#g' ../src/main/kotlin/com/budilov/Properties.kt
 sed  -i 's#BUCKET_REPLACE_ME#'${BUCKET_NAME}'#g' ../src/main/kotlin/com/budilov/Properties.kt
 
-# Print out the values
-grep "=" ../src/main/kotlin/com/budilov/Properties.kt
-
 # Build the code again and update all of the lambda functions
 cd ..
 ./gradlew build
@@ -234,6 +231,7 @@ GATEWAY_ID=$(cat /tmp/apigateway-import-api | grep id | awk '{print $2}' | xargs
 ## Deploy to 'prd' stage
 echo "Deploying the gateway with id of " ${GATEWAY_ID} " to prd"
 aws apigateway create-deployment --rest-api-id ${GATEWAY_ID} --stage-name prod
+API_GATEWAY_URL="https://${GATEWAY_ID}.execute-api.${REGION}.amazonaws.com/prod"
 
 ## Create a script that will remove (most) all of the AWS resources created
 cat << EOF >> ${DELETE_SCRIPT}
@@ -245,6 +243,8 @@ EOF
 echo "------------"
 echo "You're done!"
 echo "------------"
+echo "These are you configured values:"
+grep "=" ../src/main/kotlin/com/budilov/Properties.kt
 
 echo "-Try out the following commands: -"
 
@@ -254,3 +254,5 @@ echo "aws s3 cp new-york.jpg s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-
 echo "Remove the picture"
 echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/new-york.jpg"
 
+echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
+echo "curl -X POST -H \"Authorization: JWT_TOKEN_ID\"-H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}\""
