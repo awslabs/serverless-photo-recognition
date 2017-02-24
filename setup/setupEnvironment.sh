@@ -27,6 +27,8 @@ ROLE_NAME=lambda-to-es-rek-s3-${ROOT_NAME}
 ES_DOMAIN_NAME=rekognition${ROOT_NAME}
 
 # Start the creation of the deletion script
+touch ${DELETE_SCRIPT}
+chmod 755 ${DELETE_SCRIPT}
 cat << EOF >> ${DELETE_SCRIPT}
 #!/usr/bin/env bash
 
@@ -101,17 +103,19 @@ echo "Detaching ${ROLE_NAME}'s policies and deleting role"
 aws iam detach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonESFullAccess
 aws iam detach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonRekognitionFullAccess
 aws iam detach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+aws iam detach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
 aws iam delete-role --role-name ${ROLE_NAME}
 
 EOF
 
 
 # Create the photos bucket
-aws s3 mb s3://${BUCKET_NAME}/ --region $REGION
+aws s3 mb s3://${BUCKET_NAME}/ --region ${REGION}
 
 # Create delete bucket code
 cat << EOF >> ${DELETE_SCRIPT}
 echo "Removing the bucket"
+aws s3 rm s3://${BUCKET_NAME} --recursive
 aws s3 rb s3://${BUCKET_NAME}
 
 EOF
@@ -164,7 +168,7 @@ echo "Creating the events"
 aws s3api put-bucket-notification-configuration --bucket ${BUCKET_NAME} --notification-configuration file:///tmp/s3-notifications.json
 
 # Setup Elasticsearch
-echo "Setup Elasticsearch"
+echo "Setup Elasticsearch with a domain of ${ES_DOMAIN_NAME}"
 aws es create-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --elasticsearch-version 5.1 --elasticsearch-cluster-config InstanceType=t2.small.elasticsearch,InstanceCount=1 --ebs-options EBSEnabled=true,VolumeType=standard,VolumeSize=10
 cat elasticsearch_service_policy.json |
     sed 's#ACCOUNT_NAME_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' |
@@ -175,13 +179,14 @@ cat elasticsearch_service_policy.json |
 aws es update-elasticsearch-domain-config --domain-name ${ES_DOMAIN_NAME} --access-policies file:///tmp/elasticsearch_service_policy.json
 
 ## We need the endpoint url now, but the ES domain is most-likely processing right now. Let's wait until it finishes
-while [ 'None' == $(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query  "DomainStatus.Endpoint" --output text) ];
+while [ 'None' == $(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query "DomainStatus.Endpoint" --output text) ];
 do
-    echo "Waiting for the Elasticsearch domain to finish processing. Sleeping..."
+    echo "Waiting for the ES domain ${ES_DOMAIN_NAME} to finish processing. Sleeping..."
     sleep 30
 done
 
 ES_ENDPOINT=$(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query "DomainStatus.Endpoint" --output text)
+echo "Got the ES endpoint: ${ES_ENDPOINT}"
 
 # Create delete ES domain
 cat << EOF >> ${DELETE_SCRIPT}
@@ -191,7 +196,6 @@ aws es delete-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME}
 EOF
 
 # Replace all of the property values in Properties.kt
-cp ../src/main/kotlin/com/budilov/Properties.kt /tmp/Properties.kt-${ROOT_NAME}
 sed  -i 's#REGION_REPLACE_ME#'${REGION}'#g' ../src/main/kotlin/com/budilov/Properties.kt
 sed  -i 's#ACCOUNT_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' ../src/main/kotlin/com/budilov/Properties.kt
 sed  -i 's#COGNITO_POOL_ID_REPLACE_ME#'${COGNITO_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
@@ -210,7 +214,6 @@ updateFunction ${REGION} ${FUNCTION_REK_ADD} ${JAR_LOCATION}
 updateFunction ${REGION} ${FUNCTION_REK_DEL} ${JAR_LOCATION}
 updateFunction ${REGION} ${FUNCTION_REK_SEARCH} ${JAR_LOCATION}
 # Restore the Properties file
-cp /tmp/Properties.kt-${ROOT_NAME} ../src/main/kotlin/com/budilov/Properties.kt
 
 # Import your API Gateway Swagger template. This command can run after the Cognito User Pool is created
 ## First substitute values in the swagger file: COGNITO_POOL_NAME_REPLACE_ME,
@@ -238,4 +241,15 @@ aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID}
 
 EOF
 
-echo "You're done"
+echo "------------"
+echo "You're done!"
+echo "------------"
+
+echo "-Try out the following commands: -"
+
+echo "Upload a picture"
+echo "aws s3 cp new-york.jpg s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/"
+
+echo "Remove the picture"
+echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/new-york.jpg"
+
