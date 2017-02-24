@@ -111,7 +111,7 @@ EOF
 
 # Create the photos bucket
 aws s3 mb s3://${BUCKET_NAME}/ --region ${REGION}
-aws s3api put-bucket-cors --bucket ${BUCKET_NAME} --cors-configuration file://s3-bucket-cors-configuration.xml
+aws s3api put-bucket-cors --bucket ${BUCKET_NAME} --cors-configuration file://s3-bucket-cors-configuration.json
 
 # Create delete bucket code
 cat << EOF >> ${DELETE_SCRIPT}
