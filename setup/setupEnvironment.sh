@@ -197,12 +197,12 @@ aws es delete-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME}
 EOF
 
 # Replace all of the property values in Properties.kt
-sed  -i 's#REGION_REPLACE_ME#'${REGION}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed  -i 's#ACCOUNT_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed  -i 's#COGNITO_POOL_ID_REPLACE_ME#'${COGNITO_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed  -i 's#USER_POOL_ID_REPLACE_ME#'${USER_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed  -i 's#ES_SERVICE_URL_REPLACE_ME#'${ES_ENDPOINT}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed  -i 's#BUCKET_REPLACE_ME#'${BUCKET_NAME}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i.tmp 's#REGION_REPLACE_ME#'${REGION}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i.tmp 's#ACCOUNT_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i.tmp 's#COGNITO_POOL_ID_REPLACE_ME#'${COGNITO_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i.tmp 's#USER_POOL_ID_REPLACE_ME#'${USER_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i.tmp 's#ES_SERVICE_URL_REPLACE_ME#'${ES_ENDPOINT}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i.tmp 's#BUCKET_REPLACE_ME#'${BUCKET_NAME}'#g' ../src/main/kotlin/com/budilov/Properties.kt
 
 # Build the code again and update all of the lambda functions
 cd ..
@@ -294,6 +294,6 @@ echo "Remove the picture"
 echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/${COGNITO_POOL_ID}/new-york.jpg"
 echo
 echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
-echo "curl -X POST -H \"Authorization: ${JWT_ID_TOKEN}\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}\""
+echo "curl -X POST -H \"Authorization: ${JWT_ID_TOKEN}\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search\""
 echo
 echo
