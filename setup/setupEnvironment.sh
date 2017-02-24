@@ -143,8 +143,8 @@ done
 
 ES_ENDPOINT=$(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query "DomainStatus.Endpoint" --output text)
 
-# Replace all of the property values in Properties.kt
-cat ../src/main/kotlin/com/budilov/Properties.kt |
+# Replace all of the property values in Properties.template into Properties.kt
+cat ../src/main/kotlin/com/budilov/Properties.template |
     sed 's#REGION_REPLACE_ME#'${REGION}'#g' |
     sed 's#ACCOUNT_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' |
     sed 's#COGNITO_POOL_ID_REPLACE_ME#'${COGNITO_POOL_ID}'#g' |
@@ -177,5 +177,38 @@ GATEWAY_ID=$(cat /tmp/apigateway-import-api | grep id | awk '{print $2}' | xargs
 ## Deploy to 'prd' stage
 echo "Deploying the gateway with id of " ${GATEWAY_ID} " to prd"
 aws apigateway create-deployment --rest-api-id ${GATEWAY_ID} --stage-name prod
+
+## Create a script that will remove (most) all of the AWS resources created
+cat << EOF > /tmp/deleteAWSResources${ROOT_NAME}.sh
+#!/usr/bin/env bash
+
+read -p "This will remove (most) all of the previously created AWS resources. Are you sure? " -n 1 -r
+echo    
+if [[ ! \$REPLY =~ ^[Yy]$ ]]
+then
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1 
+fi
+echo
+echo "Removing S3 bucket . . ."
+aws s3 rb s3://${BUCKET_NAME}
+echo
+echo "Removing Lambda functions . . ."
+aws lambda delete-function --function-name ${FUNCTION_REK_ADD}
+aws lambda delete-function --function-name ${FUNCTION_REK_DEL}
+aws lambda delete-function --function-name ${FUNCTION_REK_SEARCH}
+echo
+echo "Removing ElasticSearch domain . . ."
+aws es delete-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME}
+echo
+echo "Removing the Cognitio user pool . . ."
+aws cognito-idp delete-user-pool --user-pool-id ${USER_POOL_ID}
+echo
+echo "Removing the API gateway . . ."
+aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID}
+echo
+echo "Don't forget to remove the IAM role ${ROLE_NAME}"
+echo
+echo
+EOF
 
 echo "You're done"
