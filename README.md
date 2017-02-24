@@ -31,9 +31,10 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 
 ### AWS Setup
 The following command will setup all of the needed resources to get you going:
+
 ```./setup/setupEnvironment.sh```
 
-It will also create a deletion script under ```/tmp/``` 
+It will also create a deletion script under the tmp directory
 
 At the end of the script, you'll see 3 commands that you can run to test out your configuration. The ```curl``` command
 requires you to follow the steps in the "Amazon Cognito" section below (to get the JWT token and your Cognito ID). You'll need
