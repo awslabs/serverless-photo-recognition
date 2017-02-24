@@ -30,9 +30,14 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 * [Amazon Elasticsearch](https://aws.amazon.com/elasticsearch-service/)
 
 ### AWS Setup
-There are multiple AWS services involved here. Follow the below instructions for each one of them 
-(For a simple way to get started you can just run ```./setup/setupEnvironment.sh```. The contents of the 
-```Properties.kt``` file are modified automatically for you, and deployed. Then just skip to the _Let's test it_).
+The following command will setup all of the needed resources to get you going:
+```./setup/setupEnvironment.sh```
+
+It will also create a deletion script under ```/tmp/``` 
+
+At the end of the script, you'll see 3 commands that you can run to test out your configuration. The ```curl``` command
+requires you to follow the steps in the "Amazon Cognito" section below (to get the JWT token and your Cognito ID). You'll need
+the latter to add an image the former to search your images. 
 
 #### Amazon Cognito
 You need to have the following Amazon Cognito parameters in order to test out this setup: 
@@ -56,107 +61,8 @@ when running the curl command to search for images (the <JWT_ID_TOKEN> value).
 You'll need to update the com.budilov.Properties.kt object with the newly-created values, otherwise you'll get 
 authentication errors. 
 
-#### AWS Lambda
-For convenience, all 3 AWS Lambda functions are packaged in this project (later on you might want to separate them 
-into different projects to minimize the size of each Lambda function)
 
-Build the code with ```./gradlew jar```  and use the generated artifact under 
-```build/libs/rekognition-rest-1.0-SNAPSHOT.jar``` to create the following three Lambda functions
-
-* rekognition-api
-    * use setup/lambda_to_elasticsearch_policy.json as the role's policy
-* rekognition-add-pic
-    * use setup/amazon_rekognition_full_access_policy.json
-* rekognition-del-pic
-    * use setup/amazon_rekognition_full_access_policy.json
-
-#### Amazon S3
-Setup an S3 bucket where you will upload pictures. You need to create an event that will
-trigger the _rekognition-add-pic_ Lambda function on a POST and _rekognition-del-pic_ on a DELETE
-
-
-#### Amazon API Gateway
-Setup your API Gateway Proxy with Lambda as your Integration endpoint. See instructions below:
-[API Gateway Proxy Setup](http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-set-up-simple-proxy.html)
-
-You can use the swagger definitions included under ```setup/apigateway-swagger.json```, but make sure to modify the 
-Amazon Cognito configurations before importing the swagger definition -- it'll fail otherwise. 
-
-API Gateway will proxy the requests with the following data being available to you 
-(POJO defined in com.budilov.pojo.ApigatewayRequest.kt):
-```
-
-{
-    "path":"/picture/search",
-    "headers":{
-    "Accept":"*/*",
-    "Accept-Encoding":"gzip, deflate, br",
-    "Accept-Language":"en-US,en;q\u003d0.8,ru;q\u003d0.6",
-    "Authorization":"aaaaa.bbbbb.cccccc",
-    "Cache-Control":"no-cache",
-    "CloudFront-Forwarded-Proto":"https",
-    "CloudFront-Is-Desktop-Viewer":"true",
-    "CloudFront-Is-Mobile-Viewer":"false",
-    "CloudFront-Is-SmartTV-Viewer":"false",
-    "CloudFront-Is-Tablet-Viewer":"false",
-    "CloudFront-Viewer-Country":"US",
-    "Content-Type":"text/plain;charset\u003dUTF-8",
-    "DNT":"1",
-    "Host":"e9djdv2xjb.execute-api.us-east-1.amazonaws.com",
-    "Origin":"chrome-extension://fhbjgbiflinjbdggehcddcbncdddomop",
-    "Postman-Token":"00f89100-c230-2a1b-36b3-d854b4bb432f",
-    "search-key":"glasses",
-    "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
-    "Via":"1.1 829eee129e6b5002d6c1a37f04888da1.cloudfront.net (CloudFront)",
-    "X-Amz-Cf-Id":"VxjWNrjlTek5VOJ2tMoPzYJXXZ9wIsddjDxMT-ncCsxsU7AoRiXYLA\u003d\u003d",
-    "X-Forwarded-For":"71.162.161.103, 54.240.159.56",
-    "X-Forwarded-Port":"443",
-    "X-Forwarded-Proto":"https"
-},
-    "requestContext":{
-    "accountId":"540403165297",
-    "resourceId":"ywrcne",
-    "stage":"prd",
-    "requestId":"2f5b082a-d57a-11e6-9502-5b8a76e3fba2",
-    "identity":{
-    "sourceIp":"71.162.161.103",
-    "userAgent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
-},
-    "authorizer":{
-    "claims":{
-    "sub":"aaaaaaa-bbbbb-ccccc-ddddd-eeeeeeeeeeee",
-    "aud":"asdfasdfasdfasdf",
-    "email_verified":"true",
-    "token_use":"id",
-    "auth_time":"1483859554",
-    "iss":"https://cognito-idp.us-east-1.amazonaws.com/us-east-1_AAAAAAAAA",
-    "nickname":"Vladimir",
-    "cognito:username":"vladimir.budilov@myemaildomain.com",
-    "exp":"Sun Jan 08 08:12:34 UTC 2017",
-    "iat":"Sun Jan 08 07:12:34 UTC 2017",
-    "email":"vladimir.budilov@myemaildomain.com"
-}
-},
-    "resourcePath":"/picture/search",
-    "httpMethod":"POST",
-    "apiId":"asdfasdfasdfasdf"
-},
-    "resource":"/picture/search",
-    "httpMethod":"POST"
-}
-
-```
-#### Amazon Rekognition
-You don't need to do anything specific to start using Amazon Rekognition. 
-
-#### Amazon ElasticSearch 
-You'll need to create an ElasticSearch cluster (either on your own or using the Amazon Elasticsearch service). Use the
-```setup/elasticsearch_service_policy.json``` access policy as a guide (modify the account number, role name, and IP address)
-
-The provided sample policy is required to allow only the Lambda functions that are running with a specific role to 
-have access to the Elasticsearch cluster
-
-### Let's test it
+### Let's test it (use the script-provided commands for initial testing purposes)
 
 _Upload a picture to the S3 bucket_
 
