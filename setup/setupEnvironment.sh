@@ -135,7 +135,7 @@ cat elasticsearch_service_policy.json |
 aws es update-elasticsearch-domain-config --domain-name ${ES_DOMAIN_NAME} --access-policies file:///tmp/elasticsearch_service_policy.json
 
 ## We need the endpoint url now, but the ES domain is most-likely processing right now. Let's wait until it finishes
-while [ 'True' == $(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query  "DomainStatus.Processing" --output text) ];
+while [ 'None' == $(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query  "DomainStatus.Endpoint" --output text) ];
 do
     echo "Waiting for the Elasticsearch domain to finish processing. Sleeping..."
     sleep 30
