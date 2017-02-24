@@ -92,6 +92,7 @@ aws iam create-role --role-name ${ROLE_NAME} --assume-role-policy-document file:
 aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonESFullAccess
 aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonRekognitionFullAccess
 aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
 
 # Creating the role & role policy deletion
 cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
