@@ -32,7 +32,7 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 ### AWS Setup
 The following command will setup all of the needed resources to get you going:
 
-```./setup/setupEnvironment.sh```
+./setup/setupEnvironment.sh
 
 It will also create a deletion script under the tmp directory
 
