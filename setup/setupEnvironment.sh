@@ -9,6 +9,7 @@ EXTERNAL_IP_ADDRESS=$(curl ipinfo.io/ip)
 ACCOUNT_NUMBER=$(aws ec2 describe-security-groups --group-names 'Default' --query 'SecurityGroups[0].OwnerId' --output text)
 COGNITO_POOL_NAME_REPLACE_ME=${ROOT_NAME}rek
 API_GATEWAY_NAME=cognitorek-${ROOT_NAME}
+DELETE_SCRIPT=/tmp/deleteAWSResources${ROOT_NAME}.sh
 
 # Lambda
 JAR_LOCATION=../build/libs/rekognition-rest-1.0-SNAPSHOT.jar
@@ -26,7 +27,7 @@ ROLE_NAME=lambda-to-es-rek-s3-${ROOT_NAME}
 ES_DOMAIN_NAME=rekognition${ROOT_NAME}
 
 # Start the creation of the deletion script
-cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+cat << EOF >> ${DELETE_SCRIPT}
 #!/usr/bin/env bash
 
 read -p "This will remove (most) all of the previously created AWS resources. Are you sure? " -n 1 -r
@@ -54,7 +55,7 @@ createLambdaFunction() {
         --memory-size 192 \
         --timeout 20
 
-cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+cat << EOF >> ${DELETE_SCRIPT}
 echo "Deleting the " $2 " Lambda function"
 aws lambda delete-function --function-name $2
 
@@ -78,7 +79,7 @@ updateFunction() {
 echo "Creating the Cognito resources"
 cd ./cognito-quickstart/
 chmod 755 createResources.sh
-./createResources.sh ${COGNITO_POOL_NAME_REPLACE_ME} ${ACCOUNT_NUMBER} ${REGION} ${BUCKET_NAME}
+./createResources.sh ${COGNITO_POOL_NAME_REPLACE_ME} ${ACCOUNT_NUMBER} ${REGION} ${BUCKET_NAME} ${DELETE_SCRIPT}
 USER_POOL_ID=$(cat /tmp/userPoolId)
 COGNITO_POOL_ID=$(cat /tmp/identityPoolId)
 echo "Cognito User Pool Id: " ${USER_POOL_ID}
@@ -94,7 +95,7 @@ aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aw
 aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
 
 # Creating the role & role policy deletion
-cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+cat << EOF >> ${DELETE_SCRIPT}
 echo "Detaching ${ROLE_NAME}'s policies and deleting role"
 aws iam detach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonESFullAccess
 aws iam detach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonRekognitionFullAccess
@@ -108,7 +109,7 @@ EOF
 aws s3 mb s3://${BUCKET_NAME}/ --region $REGION
 
 # Create delete bucket code
-cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+cat << EOF >> ${DELETE_SCRIPT}
 echo "Removing the bucket"
 aws s3 rb s3://${BUCKET_NAME}
 
@@ -182,7 +183,7 @@ done
 ES_ENDPOINT=$(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query "DomainStatus.Endpoint" --output text)
 
 # Create delete ES domain
-cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+cat << EOF >> ${DELETE_SCRIPT}
 echo "Deleting the ES domain"
 aws es delete-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME}
 
@@ -230,7 +231,7 @@ echo "Deploying the gateway with id of " ${GATEWAY_ID} " to prd"
 aws apigateway create-deployment --rest-api-id ${GATEWAY_ID} --stage-name prod
 
 ## Create a script that will remove (most) all of the AWS resources created
-cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+cat << EOF >> ${DELETE_SCRIPT}
 echo "Deleting API Gateway"
 aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID}
 

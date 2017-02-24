@@ -10,6 +10,8 @@ POOL_NAME=$ROOT_NAME
 IDENTITY_POOL_NAME=$ROOT_NAME
 REGION=$3
 PICTURE_BUCKET_NAME=$4
+DELETE_SCRIPT=$5
+
 # Create DDB Table
 aws dynamodb create-table \
     --table-name $TABLE_NAME \
@@ -21,25 +23,54 @@ aws dynamodb create-table \
     --region $REGION
 
 
+cat << EOF >> ${DELETE_SCRIPT}
+echo "Deleting DDB table: " $TABLE_NAME
+aws dynamodb  delete-table --table-name $TABLE_NAME
+
+EOF
+
 # Create a Cognito Identity and Set roles
 aws cognito-identity create-identity-pool --identity-pool-name $IDENTITY_POOL_NAME --allow-unauthenticated-identities --region $REGION| grep IdentityPoolId | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//' > /tmp/poolId
 identityPoolId=$(cat /tmp/poolId)
 echo $identityPoolId > /tmp/identityPoolId
 
+cat << EOF >> ${DELETE_SCRIPT}
+echo "Deleting Identity Pool: " $identityPoolId
+aws cognito-identity delete-identity-pool --identity-pool-id $identityPoolId
+
+EOF
+
 # Create an IAM role for unauthenticated users
 cat unauthrole-trust-policy.json | sed 's/IDENTITY_POOL/'$identityPoolId'/' > /tmp/unauthrole-trust-policy.json
 aws iam create-role --role-name $ROLE_NAME_PREFIX-unauthenticated-role --assume-role-policy-document file:///tmp/unauthrole-trust-policy.json
 aws iam put-role-policy --role-name $ROLE_NAME_PREFIX-unauthenticated-role --policy-name CognitoPolicy --policy-document file://unauthrole.json
+cat << EOF >> ${DELETE_SCRIPT}
+echo "Detaching " $ROLE_NAME_PREFIX-unauthenticated-role"'s policies and deleting role"
+aws iam delete-role-policy --role-name $ROLE_NAME_PREFIX-unauthenticated-role --policy-name CognitoPolicy
+aws iam delete-role --role-name $ROLE_NAME_PREFIX-unauthenticated-role
+
+EOF
 
 # Create an IAM role for authenticated users
 cat authrole-trust-policy.json | sed 's/IDENTITY_POOL/'$identityPoolId'/' > /tmp/authrole-trust-policy.json
 aws iam create-role --role-name $ROLE_NAME_PREFIX-authenticated-role --assume-role-policy-document file:///tmp/authrole-trust-policy.json
 cat authrole.json | sed 's/TABLE_NAME/'$TABLE_NAME'/' | sed 's/ACCOUNT_NUMBER/'$AWS_ACCOUNT'/' | sed 's/REGION/'$REGION'/' | sed 's/PICTURES_BUCKET_NAME_REPLACE_ME/'${PICTURE_BUCKET_NAME}'/'> /tmp/authrole.json
 aws iam put-role-policy --role-name $ROLE_NAME_PREFIX-authenticated-role --policy-name CognitoPolicy --policy-document file:///tmp/authrole.json
+cat << EOF >> ${DELETE_SCRIPT}
+echo "Detaching " $ROLE_NAME_PREFIX-authenticated-role"'s policies and deleting role"
+aws iam delete-role-policy --role-name $ROLE_NAME_PREFIX-authenticated-role --policy-name CognitoPolicy
+aws iam delete-role --role-name $ROLE_NAME_PREFIX-authenticated-role
+
+EOF
 
 # Create the user pool
 aws cognito-idp create-user-pool --pool-name $POOL_NAME --auto-verified-attributes email --schema Name=email,Required=true --policies file://user-pool-policy.json --region $REGION > /tmp/$POOL_NAME-create-user-pool
 userPoolId=$(grep -E '"Id":' /tmp/$POOL_NAME-create-user-pool | awk -F'"' '{print $4}')
+cat << EOF >> ${DELETE_SCRIPT}
+echo "Deleting user pool: " + ${userPoolId}
+aws cognito-idp delete-user-pool --user-pool-id ${userPoolId}
+
+EOF
 
 # Create the user pool client
 aws cognito-idp create-user-pool-client --user-pool-id $userPoolId --no-generate-secret --client-name webapp --region $REGION > /tmp/$POOL_NAME-create-user-pool-client
