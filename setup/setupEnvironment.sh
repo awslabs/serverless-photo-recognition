@@ -8,6 +8,7 @@ REGION=us-east-1
 EXTERNAL_IP_ADDRESS=$(curl ipinfo.io/ip)
 ACCOUNT_NUMBER=$(aws ec2 describe-security-groups --group-names 'Default' --query 'SecurityGroups[0].OwnerId' --output text)
 COGNITO_POOL_NAME_REPLACE_ME=${ROOT_NAME}rek
+API_GATEWAY_NAME=cognitorek-${ROOT_NAME}
 
 # Lambda
 JAR_LOCATION=../build/libs/rekognition-rest-1.0-SNAPSHOT.jar
@@ -19,10 +20,23 @@ FUNCTION_REK_ADD_HANDLER=com.budilov.AddPhotoLambda
 FUNCTION_REK_DEL_HANDLER=com.budilov.RemovePhotoLambda
 
 # IAM
-ROLE_NAME=lambda-to-es-rek-s3
+ROLE_NAME=lambda-to-es-rek-s3-${ROOT_NAME}
 
 # ES
 ES_DOMAIN_NAME=rekognition${ROOT_NAME}
+
+# Start the creation of the deletion script
+cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+#!/usr/bin/env bash
+
+read -p "This will remove (most) all of the previously created AWS resources. Are you sure? " -n 1 -r
+echo
+if [[ ! \$REPLY =~ ^[Yy]$ ]]
+then
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+fi
+
+EOF
 
 # Methods
 createLambdaFunction() {
@@ -39,6 +53,13 @@ createLambdaFunction() {
         --runtime java8 \
         --memory-size 192 \
         --timeout 20
+
+cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+echo "Deleting the " $2 " Lambda function"
+aws lambda delete-function --function-name $2
+
+EOF
+
 }
 
 updateFunction() {
@@ -61,7 +82,7 @@ chmod 755 createResources.sh
 USER_POOL_ID=$(cat /tmp/userPoolId)
 COGNITO_POOL_ID=$(cat /tmp/identityPoolId)
 echo "Cognito User Pool Id: " ${USER_POOL_ID}
-echo "Cognito Identity Id: " + ${COGNITO_POOL_ID}
+echo "Cognito Identity Id:  " ${COGNITO_POOL_ID}
 cd ..
 
 POOL_ARN_REPLACE_ME=arn:aws:cognito-idp:${REGION}:${ACCOUNT_NUMBER}:userpool/${USER_POOL_ID}
@@ -72,9 +93,26 @@ aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aw
 aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonRekognitionFullAccess
 aws iam attach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
 
-# Create the photos bucket
-aws s3 mb s3://$BUCKET_NAME/ --region $REGION
+# Creating the role & role policy deletion
+cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+echo "Detaching ${ROLE_NAME}'s policies and deleting role"
+aws iam detach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonESFullAccess
+aws iam detach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonRekognitionFullAccess
+aws iam detach-role-policy --role-name ${ROLE_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+aws iam delete-role --role-name ${ROLE_NAME}
 
+EOF
+
+
+# Create the photos bucket
+aws s3 mb s3://${BUCKET_NAME}/ --region $REGION
+
+# Create delete bucket code
+cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+echo "Removing the bucket"
+aws s3 rb s3://${BUCKET_NAME}
+
+EOF
 # Build and deploy Lambda functions
 ## Build
 cd ..
@@ -143,14 +181,24 @@ done
 
 ES_ENDPOINT=$(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query "DomainStatus.Endpoint" --output text)
 
+# Create delete ES domain
+cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+echo "Deleting the ES domain"
+aws es delete-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME}
+
+EOF
+
 # Replace all of the property values in Properties.kt
-cat ../src/main/kotlin/com/budilov/Properties.kt |
-    sed 's#REGION_REPLACE_ME#'${REGION}'#g' |
-    sed 's#ACCOUNT_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' |
-    sed 's#COGNITO_POOL_ID_REPLACE_ME#'${COGNITO_POOL_ID}'#g' |
-    sed 's#USER_POOL_ID_REPLACE_ME#'${USER_POOL_ID}'#g' |
-    sed 's#ES_SERVICE_URL_REPLACE_ME#'${ES_ENDPOINT}'#g' |
-    sed 's#BUCKET_REPLACE_ME#'${BUCKET_NAME}'#g' > ../src/main/kotlin/com/budilov/Properties.kt
+cp ../src/main/kotlin/com/budilov/Properties.kt /tmp/Properties.kt-${ROOT_NAME}
+sed  -i 's#REGION_REPLACE_ME#'${REGION}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i 's#ACCOUNT_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i 's#COGNITO_POOL_ID_REPLACE_ME#'${COGNITO_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i 's#USER_POOL_ID_REPLACE_ME#'${USER_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i 's#ES_SERVICE_URL_REPLACE_ME#'${ES_ENDPOINT}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed  -i 's#BUCKET_REPLACE_ME#'${BUCKET_NAME}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+
+# Print out the values
+grep "=" ../src/main/kotlin/com/budilov/Properties.kt
 
 # Build the code again and update all of the lambda functions
 cd ..
@@ -159,6 +207,8 @@ cd setup
 updateFunction ${REGION} ${FUNCTION_REK_ADD} ${JAR_LOCATION}
 updateFunction ${REGION} ${FUNCTION_REK_DEL} ${JAR_LOCATION}
 updateFunction ${REGION} ${FUNCTION_REK_SEARCH} ${JAR_LOCATION}
+# Restore the Properties file
+cp /tmp/Properties.kt-${ROOT_NAME} ../src/main/kotlin/com/budilov/Properties.kt
 
 # Import your API Gateway Swagger template. This command can run after the Cognito User Pool is created
 ## First substitute values in the swagger file: COGNITO_POOL_NAME_REPLACE_ME,
@@ -168,6 +218,7 @@ cat apigateway-swagger.json |
     sed 's#REGION_REPLACE_ME#'${REGION}'#g' |
     sed 's#COGNITO_POOL_NAME_REPLACE_ME#'${COGNITO_POOL_NAME_REPLACE_ME}'#g' |
     sed 's#POOL_ARN_REPLACE_ME#'${POOL_ARN_REPLACE_ME}'#g' |
+    sed 's#API_GATEWAY_NAME_REPLACE_ME#'${API_GATEWAY_NAME}'#g' |
     sed 's#REKOGNITION_SEARCH_FUNCTION_ARN_REPLACE_ME#'${REKOGNITION_SEARCH_FUNCTION_ARN}'#g' > /tmp/apigateway-swagger.json
 
 echo "Importing the swagger template"
@@ -177,5 +228,12 @@ GATEWAY_ID=$(cat /tmp/apigateway-import-api | grep id | awk '{print $2}' | xargs
 ## Deploy to 'prd' stage
 echo "Deploying the gateway with id of " ${GATEWAY_ID} " to prd"
 aws apigateway create-deployment --rest-api-id ${GATEWAY_ID} --stage-name prod
+
+## Create a script that will remove (most) all of the AWS resources created
+cat << EOF >> /tmp/deleteAWSResources${ROOT_NAME}.sh
+echo "Deleting API Gateway"
+aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID}
+
+EOF
 
 echo "You're done"

@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "version": "2017-01-12T02:52:43Z",
-    "title": "cognitorekognition"
+    "title": "API_GATEWAY_NAME_REPLACE_ME"
   },
   "host": "e9djdv2xjb.execute-api.REGION_REPLACE_ME.amazonaws.com",
   "basePath": "/prd",
