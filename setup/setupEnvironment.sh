@@ -197,12 +197,12 @@ aws es delete-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME}
 EOF
 
 # Replace all of the property values in Properties.kt
-sed  -i 's#REGION_REPLACE_ME#'${REGION}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed  -i 's#ACCOUNT_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed  -i 's#COGNITO_POOL_ID_REPLACE_ME#'${COGNITO_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed  -i 's#USER_POOL_ID_REPLACE_ME#'${USER_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed  -i 's#ES_SERVICE_URL_REPLACE_ME#'${ES_ENDPOINT}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed  -i 's#BUCKET_REPLACE_ME#'${BUCKET_NAME}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed -i.bak 's#REGION_REPLACE_ME#'${REGION}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed -i.bak 's#ACCOUNT_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed -i.bak 's#COGNITO_POOL_ID_REPLACE_ME#'${COGNITO_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed -i.bak 's#USER_POOL_ID_REPLACE_ME#'${USER_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed -i.bak 's#ES_SERVICE_URL_REPLACE_ME#'${ES_ENDPOINT}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed -i.bak 's#BUCKET_REPLACE_ME#'${BUCKET_NAME}'#g' ../src/main/kotlin/com/budilov/Properties.kt
 
 # Build the code again and update all of the lambda functions
 cd ..
