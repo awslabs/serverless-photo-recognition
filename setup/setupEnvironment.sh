@@ -238,6 +238,20 @@ cat << EOF >> ${DELETE_SCRIPT}
 echo "Deleting API Gateway"
 aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID}
 
+echo "Deleting Cloudwatch logs for the Lambda functions"
+LOGS=$(aws logs describe-log-groups --query 'logGroups[?ends_with(logGroupName,to_string(${ROOTNAME}))].logGroupName' --output text)
+for log in ${LOGS}
+do
+aws logs delete-log-group --log-group-name ${log}
+done
+
+echo "Deleting Cloudwatch logs for the API Gateway"
+LOGS=$(aws logs describe-log-groups --query 'logGroups[?ends_with(logGroupName,${GATEWAY_ID})].logGroupName' --output text)
+for log in ${LOGS}
+do
+aws logs delete-log-group --log-group-name ${log}
+done
+
 EOF
 
 echo "------------"
@@ -255,4 +269,4 @@ echo "Remove the picture"
 echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/new-york.jpg"
 
 echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
-echo "curl -X POST -H \"Authorization: JWT_TOKEN_ID\"-H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}\""
+echo "curl -X POST -H \"Authorization: JWT_TOKEN_ID\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}\""
