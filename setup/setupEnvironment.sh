@@ -243,11 +243,7 @@ EOF
 ## get the JWT_ID_TOKEN
 USERNAME=$(cat /dev/urandom | env LC_CTYPE=C tr -dc "a-zA-Z0-9" | fold -w 8 | head -n 1)
 PASSWORD=$(cat /dev/urandom | env LC_CTYPE=C tr -dc "a-zA-Z0-9@#$%^&()_+~" | fold -w 16 | head -n 1)
-#USERNAME="zeke"
-#PASSWORD="P@ssword1"
 
-#echo 'username: ' ${USERNAME}
-#echo 'password: ' ${PASSWORD}
 
 #USER_POOL_ID="us-east-1_ESkLVL2Vp"
 CLIENT_ID=$(aws cognito-idp list-user-pool-clients --user-pool-id ${USER_POOL_ID} --max-results 3 --query UserPoolClients[0].ClientId --output text)
@@ -257,9 +253,6 @@ SRP_AUTH_ENABLED=$(aws cognito-idp describe-user-pool-client --user-pool-id $USE
 
 if [ ! ${SRP_AUTH_ENABLED} ]; then
 aws cognito-idp update-user-pool-client --user-pool-id ${USER_POOL_ID} --client-id ${CLIENT_ID}  --explicit-auth-flows ADMIN_NO_SRP_AUTH
-echo "enabled"
-else
-echo "already enabled"
 fi
 
 # 2. sign-up a user
@@ -294,6 +287,6 @@ echo "Remove the picture"
 echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/${COGNITO_POOL_ID}/new-york.jpg"
 echo
 echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
-echo "curl -X POST -H \"Authorization: ${JWT_ID_TOKEN}\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search\""
+echo "curl -X POST -H \"Authorization: Bearer ${JWT_ID_TOKEN}\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search\""
 echo
 echo
