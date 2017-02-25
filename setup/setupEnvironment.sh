@@ -240,6 +240,36 @@ aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID}
 
 EOF
 
+## get the JWT_ID_TOKEN
+
+
+CLIENT_ID=$(aws cognito-idp list-user-pool-clients --user-pool-id ${USER_POOL_ID} --max-results 3 --query UserPoolClients[0].ClientId --output text)
+
+# Enable sign-in API for server-based authentication (ADMIN_NO_SRP_AUTH)
+SRP_AUTH_ENABLED=$(aws cognito-idp describe-user-pool-client --user-pool-id $USER_POOL_ID --client-id $CLIENT_ID --query '[contains(UserPoolClient.ExplicitAuthFlows,`ADMIN_NO_SRP_AUTH`)]' --output text)
+
+if [ ! ${SRP_AUTH_ENABLED} ]; then
+aws cognito-idp update-user-pool-client --user-pool-id ${USER_POOL_ID} --client-id ${CLIENT_ID}  --explicit-auth-flows ADMIN_NO_SRP_AUTH
+fi
+
+# sign-up a user
+#USERNAME=$(cat /dev/urandom | env LC_CTYPE=C tr -dc "a-zA-Z0-9" | fold -w 8 | head -n 1)
+#PASSWORD=$(cat /dev/urandom | env LC_CTYPE=C tr -dc "a-zA-Z0-9@#$%^&()_+~" | fold -w 16 | head -n 1)
+USERNAME="${ROOT_NAME}_user"
+PASSWORD="P@ssword1"
+
+aws cognito-idp sign-up --client-id ${CLIENT_ID} --username ${USERNAME} --password ${PASSWORD} --user-attributes '[ { "Name": "email", "Value": "first.last@domain.com" }, { "Name": "phone_number", "Value": "+12485551212" }]'
+
+# confirm user
+aws cognito-idp admin-confirm-sign-up --user-pool-id ${USER_POOL_ID} --username ${USERNAME}
+
+# begin auth flow
+cat << EOF > /tmp/authflow.json
+{ "AuthFlow": "ADMIN_NO_SRP_AUTH", "AuthParameters": { "USERNAME": "${USERNAME}", "PASSWORD": "${PASSWORD}" } }
+EOF
+
+JWT_ID_TOKEN=$(aws cognito-idp admin-initiate-auth  --user-pool-id ${USER_POOL_ID} --client-id ${CLIENT_ID} --cli-input-json file:///tmp/authflow.json --query AuthenticationResult.IdToken --output text)
+
 echo "------------"
 echo "You're done!"
 echo "------------"
@@ -249,10 +279,11 @@ grep "=" ../src/main/kotlin/com/budilov/Properties.kt
 echo "-Try out the following commands: -"
 
 echo "Upload a picture"
-echo "aws s3 cp new-york.jpg s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/"
-
+echo "aws s3 cp new-york.jpg s3://${BUCKET_NAME}/usercontent/${COGNITO_POOL_ID}/"
+echo
 echo "Remove the picture"
-echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/new-york.jpg"
-
-echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
-echo "curl -X POST -H \"Authorization: JWT_TOKEN_ID\"-H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}\""
+echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/${COGNITO_POOL_ID}/new-york.jpg"
+echo
+echo "Sample search command "
+echo "curl -X POST -H \"Authorization: ${JWT_ID_TOKEN}\" -H \"search-key: Building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search\""
+echo
