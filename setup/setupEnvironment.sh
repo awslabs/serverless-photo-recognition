@@ -241,11 +241,8 @@ aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID}
 EOF
 
 ## get the JWT_ID_TOKEN
-USERNAME=$(cat /dev/urandom | env LC_CTYPE=C tr -dc "a-zA-Z0-9" | fold -w 8 | head -n 1)
-PASSWORD=$(cat /dev/urandom | env LC_CTYPE=C tr -dc "a-zA-Z0-9@#$%^&()_+~" | fold -w 16 | head -n 1)
 
 
-#USER_POOL_ID="us-east-1_ESkLVL2Vp"
 CLIENT_ID=$(aws cognito-idp list-user-pool-clients --user-pool-id ${USER_POOL_ID} --max-results 3 --query UserPoolClients[0].ClientId --output text)
 
 # 1.5 Enable sign-in API for server-based authentication (ADMIN_NO_SRP_AUTH)
@@ -256,7 +253,10 @@ aws cognito-idp update-user-pool-client --user-pool-id ${USER_POOL_ID} --client-
 fi
 
 # 2. sign-up a user
-
+#USERNAME=$(cat /dev/urandom | env LC_CTYPE=C tr -dc "a-zA-Z0-9" | fold -w 8 | head -n 1)
+#PASSWORD=$(cat /dev/urandom | env LC_CTYPE=C tr -dc "a-zA-Z0-9@#$%^&()_+~" | fold -w 16 | head -n 1)
+USERNAME="jakethedog"
+PASSWORD="P@ssword1"
 aws cognito-idp sign-up --client-id ${CLIENT_ID} --username ${USERNAME} --password ${PASSWORD} --user-attributes '[ { "Name": "email", "Value": "first.last@domain.com" }, { "Name": "phone_number", "Value": "+12485551212" }]'
 
 # 2.5 confirm user
@@ -270,6 +270,8 @@ EOF
 JWT_ID_TOKEN=$(aws cognito-idp admin-initiate-auth  --user-pool-id ${USER_POOL_ID} --client-id ${CLIENT_ID} --cli-input-json file:///tmp/authflow.json --query AuthenticationResult.IdToken --output text)
 
 echo "JWT_ID_TOKEN: " ${JWT_ID_TOKEN}
+
+echo "USER_POOL_ID: " ${USER_POOL_ID}
 
 
 echo "------------"
@@ -286,7 +288,6 @@ echo
 echo "Remove the picture"
 echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/${COGNITO_POOL_ID}/new-york.jpg"
 echo
-echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
-echo "curl -X POST -H \"Authorization: Bearer ${JWT_ID_TOKEN}\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search\""
-echo
+echo "Sample search command "
+echo "curl -X POST -H \"Authorization: ${JWT_ID_TOKEN}\" -H \"search-key: Building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search\""
 echo
