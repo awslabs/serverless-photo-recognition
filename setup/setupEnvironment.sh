@@ -245,34 +245,30 @@ EOF
 
 CLIENT_ID=$(aws cognito-idp list-user-pool-clients --user-pool-id ${USER_POOL_ID} --max-results 3 --query UserPoolClients[0].ClientId --output text)
 
-# 1.5 Enable sign-in API for server-based authentication (ADMIN_NO_SRP_AUTH)
+# Enable sign-in API for server-based authentication (ADMIN_NO_SRP_AUTH)
 SRP_AUTH_ENABLED=$(aws cognito-idp describe-user-pool-client --user-pool-id $USER_POOL_ID --client-id $CLIENT_ID --query '[contains(UserPoolClient.ExplicitAuthFlows,`ADMIN_NO_SRP_AUTH`)]' --output text)
 
 if [ ! ${SRP_AUTH_ENABLED} ]; then
 aws cognito-idp update-user-pool-client --user-pool-id ${USER_POOL_ID} --client-id ${CLIENT_ID}  --explicit-auth-flows ADMIN_NO_SRP_AUTH
 fi
 
-# 2. sign-up a user
+# sign-up a user
 #USERNAME=$(cat /dev/urandom | env LC_CTYPE=C tr -dc "a-zA-Z0-9" | fold -w 8 | head -n 1)
 #PASSWORD=$(cat /dev/urandom | env LC_CTYPE=C tr -dc "a-zA-Z0-9@#$%^&()_+~" | fold -w 16 | head -n 1)
-USERNAME="jakethedog"
+USERNAME="${ROOT_NAME}_user"
 PASSWORD="P@ssword1"
+
 aws cognito-idp sign-up --client-id ${CLIENT_ID} --username ${USERNAME} --password ${PASSWORD} --user-attributes '[ { "Name": "email", "Value": "first.last@domain.com" }, { "Name": "phone_number", "Value": "+12485551212" }]'
 
-# 2.5 confirm user
+# confirm user
 aws cognito-idp admin-confirm-sign-up --user-pool-id ${USER_POOL_ID} --username ${USERNAME}
 
-#3. begin auth flow
+# begin auth flow
 cat << EOF > /tmp/authflow.json
 { "AuthFlow": "ADMIN_NO_SRP_AUTH", "AuthParameters": { "USERNAME": "${USERNAME}", "PASSWORD": "${PASSWORD}" } }
 EOF
 
 JWT_ID_TOKEN=$(aws cognito-idp admin-initiate-auth  --user-pool-id ${USER_POOL_ID} --client-id ${CLIENT_ID} --cli-input-json file:///tmp/authflow.json --query AuthenticationResult.IdToken --output text)
-
-echo "JWT_ID_TOKEN: " ${JWT_ID_TOKEN}
-
-echo "USER_POOL_ID: " ${USER_POOL_ID}
-
 
 echo "------------"
 echo "You're done!"
