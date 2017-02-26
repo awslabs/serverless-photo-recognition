@@ -75,6 +75,7 @@ EOF
 # Create the user pool client
 aws cognito-idp create-user-pool-client --user-pool-id $userPoolId --no-generate-secret --client-name webapp --region $REGION > /tmp/$POOL_NAME-create-user-pool-client
 userPoolClientId=$(grep -E '"ClientId":' /tmp/$POOL_NAME-create-user-pool-client | awk -F'"' '{print $4}')
+echo ${userPoolClientId} > /tmp/userPoolClientId
 
 # Add the user pool and user pool client id to the identity pool
 aws cognito-identity update-identity-pool --allow-unauthenticated-identities --identity-pool-id $identityPoolId --identity-pool-name $IDENTITY_POOL_NAME --cognito-identity-providers ProviderName=cognito-idp.$REGION.amazonaws.com/$userPoolId,ClientId=$userPoolClientId --region $REGION
