@@ -84,8 +84,6 @@ chmod 755 createResources.sh
 ./createResources.sh ${COGNITO_POOL_NAME_REPLACE_ME} ${ACCOUNT_NUMBER} ${REGION} ${BUCKET_NAME} ${DELETE_SCRIPT}
 USER_POOL_ID=$(cat /tmp/userPoolId)
 COGNITO_POOL_ID=$(cat /tmp/identityPoolId)
-echo "Cognito User Pool Id: " ${USER_POOL_ID}
-echo "Cognito Identity Id:  " ${COGNITO_POOL_ID}
 cd ..
 
 POOL_ARN_REPLACE_ME=arn:aws:cognito-idp:${REGION}:${ACCOUNT_NUMBER}:userpool/${USER_POOL_ID}
@@ -266,12 +264,18 @@ echo "------------"
 echo "These are you configured values:"
 grep "=" ../src/main/kotlin/com/budilov/Properties.kt
 
+echo "-----COGNITO INFORMATION-------"
+echo "Cognito User Pool Id: " ${USER_POOL_ID}
+echo "Cognito Identity Pool Id:  " ${COGNITO_POOL_ID}
+echo "Cognito Client Id: " cat /tmp/userPoolClientId
+echo "-----COGNITO INFORMATION-------"
+
 echo "-Try out the following commands: -"
 
-echo "Upload a picture"
+echo "Upload a picture (in prd the part after 'usercontent' needs to be replaced with a real unique user cognito id)"
 echo "aws s3 cp new-york.jpg s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/"
 
-echo "Remove the picture"
+echo "Remove the picture (in prd the part right after 'usercontent' needs to be replaced with a real unique user cognito id)"
 echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/new-york.jpg"
 
 echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
