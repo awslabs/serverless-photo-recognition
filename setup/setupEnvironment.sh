@@ -84,7 +84,7 @@ chmod 755 createResources.sh
 ./createResources.sh ${COGNITO_POOL_NAME_REPLACE_ME} ${ACCOUNT_NUMBER} ${REGION} ${BUCKET_NAME} ${DELETE_SCRIPT}
 USER_POOL_ID=$(cat /tmp/userPoolId)
 IDENTITY_POOL_ID=$(cat /tmp/identityPoolId)
-COGNITO_CLIENT_ID=$(cat /tmp//tmp/userPoolClientId)
+COGNITO_CLIENT_ID=$(cat /tmp/userPoolClientId)
 cd ..
 
 POOL_ARN_REPLACE_ME=arn:aws:cognito-idp:${REGION}:${ACCOUNT_NUMBER}:userpool/${USER_POOL_ID}

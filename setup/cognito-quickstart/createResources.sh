@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 ROOT_NAME=$1
-TABLE_NAME=LoginTrail$ROOT_NAME
 
 # Replace with your 12-digit AWS account ID (e.g., 123456789012)
 AWS_ACCOUNT=$2
@@ -11,23 +10,6 @@ IDENTITY_POOL_NAME=$ROOT_NAME
 REGION=$3
 PICTURE_BUCKET_NAME=$4
 DELETE_SCRIPT=$5
-
-# Create DDB Table
-aws dynamodb create-table \
-    --table-name $TABLE_NAME \
-    --attribute-definitions \
-        AttributeName=userId,AttributeType=S \
-        AttributeName=activityDate,AttributeType=S \
-    --key-schema AttributeName=userId,KeyType=HASH AttributeName=activityDate,KeyType=RANGE \
-    --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 \
-    --region $REGION
-
-
-cat << EOF >> ${DELETE_SCRIPT}
-echo "Deleting DDB table: " $TABLE_NAME
-aws dynamodb  delete-table --table-name $TABLE_NAME
-
-EOF
 
 # Create a Cognito Identity and Set roles
 aws cognito-identity create-identity-pool --identity-pool-name $IDENTITY_POOL_NAME --allow-unauthenticated-identities --region $REGION| grep IdentityPoolId | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//' > /tmp/poolId
@@ -66,6 +48,7 @@ EOF
 # Create the user pool
 aws cognito-idp create-user-pool --pool-name $POOL_NAME --auto-verified-attributes email --schema Name=email,Required=true --policies file://user-pool-policy.json --region $REGION > /tmp/$POOL_NAME-create-user-pool
 userPoolId=$(grep -E '"Id":' /tmp/$POOL_NAME-create-user-pool | awk -F'"' '{print $4}')
+echo $userPoolId > /tmp/userPoolId
 cat << EOF >> ${DELETE_SCRIPT}
 echo "Deleting user pool: " + ${userPoolId}
 aws cognito-idp delete-user-pool --user-pool-id ${userPoolId}
@@ -84,4 +67,3 @@ aws cognito-identity update-identity-pool --allow-unauthenticated-identities --i
 # If this command gives you an error, associate the roles manually
 aws cognito-identity set-identity-pool-roles --identity-pool-id $identityPoolId --roles authenticated=arn:aws:iam::$AWS_ACCOUNT:role/$ROLE_NAME_PREFIX-authenticated-role,unauthenticated=arn:aws:iam::$AWS_ACCOUNT:role/$ROLE_NAME_PREFIX-unauthenticated-role --region $REGION
 
-echo $userPoolId > /tmp/userPoolId
