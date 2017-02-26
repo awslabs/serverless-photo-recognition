@@ -267,25 +267,28 @@ JWT_ID_TOKEN=$(aws cognito-idp admin-initiate-auth  --user-pool-id ${USER_POOL_I
 
 COGNITO_IDENTITY_ID=$(aws cognito-identity get-id --identity-pool-id ${IDENTITY_POOL_ID} --logins {\"cognito-idp.${REGION}.amazonaws.com/${USER_POOL_ID}\":\"${JWT_ID_TOKEN}\"} --query "IdentityId" --output text)
 
+echo ""
 echo "------------"
 echo "You're done!"
 echo "------------"
+echo ""
 echo "These are you configured values:"
 grep "=" ../src/main/kotlin/com/budilov/Properties.kt
-
+echo ""
 echo "-----COGNITO INFORMATION-------"
 echo "Cognito User Pool Id: " ${USER_POOL_ID}
 echo "Cognito Identity Pool Id:  " ${IDENTITY_POOL_ID}
 echo "Cognito Client Id: " cat /tmp/userPoolClientId
 echo "-----COGNITO INFORMATION-------"
-
-echo "-Try out the following commands: -"
-
+echo ""
+echo "-----Try out the following commands: -------"
+echo ""
 echo "Upload a picture"
 echo "aws s3 cp new-york.jpg s3://${BUCKET_NAME}/usercontent/${COGNITO_IDENTITY_ID}/"
-
+echo ""
 echo "Remove the picture"
 echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/${COGNITO_IDENTITY_ID}/new-york.jpg"
-
+echo ""
 echo "Sample search command"
 echo "curl -X POST -H \"Authorization: ${JWT_ID_TOKEN}\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search/\""
+echo ""
