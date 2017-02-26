@@ -83,7 +83,7 @@ cd ./cognito-quickstart/
 chmod 755 createResources.sh
 ./createResources.sh ${COGNITO_POOL_NAME_REPLACE_ME} ${ACCOUNT_NUMBER} ${REGION} ${BUCKET_NAME} ${DELETE_SCRIPT}
 USER_POOL_ID=$(cat /tmp/userPoolId)
-COGNITO_POOL_ID=$(cat /tmp/identityPoolId)
+IDENTITY_POOL_ID=$(cat /tmp/identityPoolId)
 COGNITO_CLIENT_ID=$(cat /tmp//tmp/userPoolClientId)
 cd ..
 
@@ -198,7 +198,7 @@ EOF
 # Replace all of the property values in Properties.kt
 sed -i.bak 's#REGION_REPLACE_ME#'${REGION}'#g' ../src/main/kotlin/com/budilov/Properties.kt
 sed -i.bak 's#ACCOUNT_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' ../src/main/kotlin/com/budilov/Properties.kt
-sed -i.bak 's#COGNITO_POOL_ID_REPLACE_ME#'${COGNITO_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
+sed -i.bak 's#COGNITO_POOL_ID_REPLACE_ME#'${IDENTITY_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
 sed -i.bak 's#USER_POOL_ID_REPLACE_ME#'${USER_POOL_ID}'#g' ../src/main/kotlin/com/budilov/Properties.kt
 sed -i.bak 's#ES_SERVICE_URL_REPLACE_ME#'${ES_ENDPOINT}'#g' ../src/main/kotlin/com/budilov/Properties.kt
 sed -i.bak 's#BUCKET_REPLACE_ME#'${BUCKET_NAME}'#g' ../src/main/kotlin/com/budilov/Properties.kt
@@ -265,6 +265,7 @@ EOF
 
 JWT_ID_TOKEN=$(aws cognito-idp admin-initiate-auth  --user-pool-id ${USER_POOL_ID} --client-id ${COGNITO_CLIENT_ID} --cli-input-json file:///tmp/authflow.json --query AuthenticationResult.IdToken --output text)
 
+COGNITO_IDENTITY_ID=$(aws cognito-identity get-id --identity-pool-id ${IDENTITY_POOL_ID} --logins {\"cognito-idp.${REGION}.amazonaws.com/${USER_POOL_ID}\":\"${JWT_ID_TOKEN}\"} --query "IdentityId" --output text)
 
 echo "------------"
 echo "You're done!"
@@ -274,17 +275,17 @@ grep "=" ../src/main/kotlin/com/budilov/Properties.kt
 
 echo "-----COGNITO INFORMATION-------"
 echo "Cognito User Pool Id: " ${USER_POOL_ID}
-echo "Cognito Identity Pool Id:  " ${COGNITO_POOL_ID}
+echo "Cognito Identity Pool Id:  " ${IDENTITY_POOL_ID}
 echo "Cognito Client Id: " cat /tmp/userPoolClientId
 echo "-----COGNITO INFORMATION-------"
 
 echo "-Try out the following commands: -"
 
-echo "Upload a picture (in prd the part after 'usercontent' needs to be replaced with a real unique user cognito id)"
-echo "aws s3 cp new-york.jpg s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/"
+echo "Upload a picture"
+echo "aws s3 cp new-york.jpg s3://${BUCKET_NAME}/usercontent/${COGNITO_IDENTITY_ID}/"
 
-echo "Remove the picture (in prd the part right after 'usercontent' needs to be replaced with a real unique user cognito id)"
-echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/new-york.jpg"
+echo "Remove the picture"
+echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/${COGNITO_IDENTITY_ID}/new-york.jpg"
 
-echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
+echo "Sample search command"
 echo "curl -X POST -H \"Authorization: ${JWT_ID_TOKEN}\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search/\""
