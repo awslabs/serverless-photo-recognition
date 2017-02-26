@@ -33,7 +33,8 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 The following command will setup all of the needed resources, as well as print out the sample command that you can run
 to test your configuration:
 
-```setup/setupEnvironment.sh```
+```setup/setupEnvironment.sh
+```
 
 It will also create a deletion script under the ```tmp``` directory
 
