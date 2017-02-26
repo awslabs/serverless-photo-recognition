@@ -13,7 +13,7 @@ object Properties {
     val _BUCKET_NAME = "BUCKET_REPLACE_ME"
     val _BUCKET_URL = "." + _BUCKET_NAME + "-" + _REGION + ".amazonaws.com"
     val _ES_SERVICE_URL = "https://ES_SERVICE_URL_REPLACE_ME"
-    val _REKOGNITION_URL = "https://rekognition." + Properties._REGION + ".amazonaws.com"
+    val _REKOGNITION_URL = "https://rekognition." + _REGION + ".amazonaws.com"
     val _REKOGNITION_CONFIDENCE_THRESHOLD = 60
     val _COGNITO_POOL_ID = "COGNITO_POOL_ID_REPLACE_ME"
     val _USER_POOL_ID = "USER_POOL_ID_REPLACE_ME"
