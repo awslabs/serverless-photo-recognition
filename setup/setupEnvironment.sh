@@ -84,6 +84,7 @@ chmod 755 createResources.sh
 ./createResources.sh ${COGNITO_POOL_NAME_REPLACE_ME} ${ACCOUNT_NUMBER} ${REGION} ${BUCKET_NAME} ${DELETE_SCRIPT}
 USER_POOL_ID=$(cat /tmp/userPoolId)
 COGNITO_POOL_ID=$(cat /tmp/identityPoolId)
+COGNITO_CLIENT_ID=$(cat /tmp//tmp/userPoolClientId)
 cd ..
 
 POOL_ARN_REPLACE_ME=arn:aws:cognito-idp:${REGION}:${ACCOUNT_NUMBER}:userpool/${USER_POOL_ID}
@@ -246,6 +247,25 @@ aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID}
 
 EOF
 
+## Enable SRP on the cognito client id
+aws cognito-idp update-user-pool-client --user-pool-id ${USER_POOL_ID} --client-id ${COGNITO_CLIENT_ID}  --explicit-auth-flows ADMIN_NO_SRP_AUTH
+
+USERNAME="test@user.com"
+PASSWORD="P@ssword1"
+
+aws cognito-idp sign-up --client-id ${COGNITO_CLIENT_ID} --username ${USERNAME} --password ${PASSWORD} --user-attributes '[ { "Name": "email", "Value": "test@user.com" }, { "Name": "phone_number", "Value": "+12485551212" }]'
+
+## Confirm user
+aws cognito-idp admin-confirm-sign-up --user-pool-id ${USER_POOL_ID} --username ${USERNAME}
+
+## begin auth flow
+cat << EOF > /tmp/authflow.json
+{ "AuthFlow": "ADMIN_NO_SRP_AUTH", "AuthParameters": { "USERNAME": "${USERNAME}", "PASSWORD": "${PASSWORD}" } }
+EOF
+
+JWT_ID_TOKEN=$(aws cognito-idp admin-initiate-auth  --user-pool-id ${USER_POOL_ID} --client-id ${COGNITO_CLIENT_ID} --cli-input-json file:///tmp/authflow.json --query AuthenticationResult.IdToken --output text)
+
+
 echo "------------"
 echo "You're done!"
 echo "------------"
@@ -267,4 +287,4 @@ echo "Remove the picture (in prd the part right after 'usercontent' needs to be 
 echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/new-york.jpg"
 
 echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
-echo "curl -X POST -H \"Authorization: JWT_TOKEN_ID\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search/\""
+echo "curl -X POST -H \"Authorization: ${JWT_ID_TOKEN}\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search/\""
