@@ -33,14 +33,16 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 The following command will setup all of the needed resources, as well as print out the sample command that you can run
 to test your configuration:
 
-```setup/setupEnvironment.sh
+```
+setup/setupEnvironment.sh
 ```
 
 It will also create a deletion script under the ```tmp``` directory
 
 At the end of the script, you'll see 3 commands that you can run to test out your configuration. Run the command and see the functionality in action:
 
-```Upload a picture
+```
+   Upload a picture
    aws s3 cp new-york.jpg s3://rekognition-111111111111/usercontent/us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/
    
    Remove the picture
