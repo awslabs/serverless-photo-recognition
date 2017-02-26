@@ -233,6 +233,14 @@ echo "Deploying the gateway with id of " ${GATEWAY_ID} " to prd"
 aws apigateway create-deployment --rest-api-id ${GATEWAY_ID} --stage-name prod
 API_GATEWAY_URL="https://${GATEWAY_ID}.execute-api.${REGION}.amazonaws.com/prod"
 
+# Grant the API Gateway access to invoke the Lambda function
+aws lambda add-permission \
+--function-name ${FUNCTION_REK_SEARCH} \
+--statement-id apigateway-prod \
+--action lambda:InvokeFunction \
+--principal apigateway.amazonaws.com \
+--source-arn "arn:aws:execute-api:${REGION}:${ACCOUNT_NUMBER}:${GATEWAY_ID}/prod/POST/picture/search"
+
 ## Create a script that will remove (most) all of the AWS resources created
 cat << EOF >> ${DELETE_SCRIPT}
 echo "Deleting API Gateway"
@@ -255,4 +263,11 @@ echo "Remove the picture"
 echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/new-york.jpg"
 
 echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
-echo "curl -X POST -H \"Authorization: JWT_TOKEN_ID\"-H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}\""
+echo "curl -X POST -H \"Authorization: JWT_TOKEN_ID\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search/\""
+
+aws lambda add-permission \
+--function-name rekognition-search-picture-20170225184353 \
+--statement-id apigateway-prod4 \
+--action lambda:InvokeFunction \
+--principal apigateway.amazonaws.com \
+--source-arn "arn:aws:execute-api:us-east-1:540403165297:u6ukkfd2tg/prod/POST/picture/search"
