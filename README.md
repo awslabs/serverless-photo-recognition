@@ -34,7 +34,9 @@ The following command will setup all of the needed resources, as well as print o
 to test your configuration:
 
 ```
-setup/setupEnvironment.sh
+clone this repo; 
+cd repolocation/setup; 
+./setupEnvironment.sh
 ```
 
 It will also create a deletion script under the ```tmp``` directory
