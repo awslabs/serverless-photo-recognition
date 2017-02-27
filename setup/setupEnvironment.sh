@@ -278,7 +278,7 @@ echo ""
 echo "-----COGNITO INFORMATION-------"
 echo "Cognito User Pool Id: " ${USER_POOL_ID}
 echo "Cognito Identity Pool Id:  " ${IDENTITY_POOL_ID}
-echo "Cognito Client Id: " cat /tmp/userPoolClientId
+echo "Cognito Client Id: " ${COGNITO_CLIENT_ID}
 echo "-----COGNITO INFORMATION-------"
 echo ""
 echo "-----Try out the following commands: -------"
