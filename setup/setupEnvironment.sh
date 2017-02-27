@@ -245,6 +245,18 @@ cat << EOF >> ${DELETE_SCRIPT}
 echo "Deleting API Gateway"
 aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID}
 
+echo "Deleting Cloudwatch logs for the Lambda functions"
+aws logs delete-log-group --log-group-name "/aws/lambda/${FUNCTION_REK_SEARCH}"
+aws logs delete-log-group --log-group-name "/aws/lambda/${FUNCTION_REK_ADD}"
+aws logs delete-log-group --log-group-name "/aws/lambda/${FUNCTION_REK_DEL}"
+
+echo "Deleting Cloudwatch logs for the API Gateway"
+LOGS=$(aws logs describe-log-groups --query 'logGroups[?ends_with(logGroupName,${GATEWAY_ID})].logGroupName' --output text)
+for log in ${LOGS}
+do
+aws logs delete-log-group --log-group-name ${log}
+done
+
 EOF
 
 ## Enable SRP on the cognito client id
@@ -280,6 +292,20 @@ echo "Cognito User Pool Id: " ${USER_POOL_ID}
 echo "Cognito Identity Pool Id:  " ${IDENTITY_POOL_ID}
 echo "Cognito Client Id: " ${COGNITO_CLIENT_ID}
 echo "-----COGNITO INFORMATION-------"
+<<<<<<< HEAD
+
+echo "-Try out the following commands: -"
+
+echo "Upload a picture (in prd the part after 'usercontent' needs to be replaced with a real unique user cognito id)"
+echo "aws s3 cp new-york.jpg s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/"
+
+echo "Remove the picture (in prd the part right after 'usercontent' needs to be replaced with a real unique user cognito id)"
+echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/us-east-1:11122233-4455-6677-8888-999999999999/new-york.jpg"
+
+echo "Sample search command (that's after you login and upload a picture using your real Cognito Id). You'll need your JWT_TOKEN_ID as well"
+
+echo "curl -X POST -H \"Authorization: JWT_TOKEN_ID\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search/\""
+=======
 echo ""
 echo "-----Try out the following commands: -------"
 echo ""
@@ -295,3 +321,4 @@ echo "Sample search command (the token will expire in about an hour)"
 echo "-------------------"
 echo "curl -X POST -H \"Authorization: ${JWT_ID_TOKEN}\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search/\""
 echo ""
+>>>>>>> 1a1799c9ef2a1ef2b97931337fab2b931bb774e9
