@@ -32,25 +32,29 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 ### AWS Setup
 The following command will setup all of the needed resources, as well as print out the sample command that you can run
 to test your configuration:
-
 ```
-clone this repo; 
-cd repolocation/setup; 
+# Clone it from github
+git clone --depth 1 git@github.com:awslabs/serverless-photo-recognition.git
+```
+```
+# Run the installation script
+cd serverless-photo-recognition/setup
 ./setupEnvironment.sh
 ```
+Running the installation script will modify the ```/src/main/kotlin/com/budilov/Properties.kt``` file with the newly-generated values. If you need to rerun the script, just revert the changes (otherwise the script will fail). 
 
 It will also create a deletion script under the ```tmp``` directory
 
 At the end of the script, you'll see 3 commands that you can run to test out your configuration. Run the command and see the functionality in action:
 
 ```
-   Upload a picture
-   aws s3 cp new-york.jpg s3://rekognition-111111111111/usercontent/us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/
-   
-   Remove the picture
-   aws s3 rm s3://rekognition-111111111111/usercontent/us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/new-york.jpg
-   
-   Sample search command
-   curl -X POST -H "Authorization: some-code-generated-here" -H "search-key: building" -H "Cache-Control: no-cache" "https://uniqueprefix.execute-api.us-east-1.amazonaws.com/prod/picture/search/"
-   ```
+Upload a picture
+aws s3 cp new-york.jpg s3://rekognition-111111111111/usercontent/us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/
+
+Sample search command
+curl -X POST -H "Authorization: some-code-generated-here" -H "search-key: building" -H "Cache-Control: no-cache" "https://uniqueprefix.execute-api.us-east-1.amazonaws.com/prod/picture/search/"
+
+Remove the picture
+aws s3 rm s3://rekognition-111111111111/usercontent/us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/new-york.jpg
+```
 
