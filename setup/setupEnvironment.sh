@@ -263,6 +263,7 @@ cat << EOF > /tmp/authflow.json
 { "AuthFlow": "ADMIN_NO_SRP_AUTH", "AuthParameters": { "USERNAME": "${USERNAME}", "PASSWORD": "${PASSWORD}" } }
 EOF
 
+# Running the following command to get the JWT Token
 JWT_ID_TOKEN=$(aws cognito-idp admin-initiate-auth  --user-pool-id ${USER_POOL_ID} --client-id ${COGNITO_CLIENT_ID} --cli-input-json file:///tmp/authflow.json --query AuthenticationResult.IdToken --output text)
 
 COGNITO_IDENTITY_ID=$(aws cognito-identity get-id --identity-pool-id ${IDENTITY_POOL_ID} --logins {\"cognito-idp.${REGION}.amazonaws.com/${USER_POOL_ID}\":\"${JWT_ID_TOKEN}\"} --query "IdentityId" --output text)
@@ -275,11 +276,17 @@ echo ""
 echo "These are you configured values:"
 grep "=" ../src/main/kotlin/com/budilov/Properties.kt
 echo ""
-echo "-----COGNITO INFORMATION-------"
-echo "Cognito User Pool Id: " ${USER_POOL_ID}
-echo "Cognito Identity Pool Id:  " ${IDENTITY_POOL_ID}
-echo "Cognito Client Id: " ${COGNITO_CLIENT_ID}
-echo "-----COGNITO INFORMATION-------"
+echo "-----COGNITO IDs-------"
+echo "User Pool:        " ${USER_POOL_ID}
+echo "Identity Pool:    " ${IDENTITY_POOL_ID}
+echo "Client:           " ${COGNITO_CLIENT_ID}
+echo "-----COGNITO IDs-------"
+echo ""
+echo "-----LAMBDA FUNCTIONS-------"
+echo "Add:              " ${FUNCTION_REK_ADD_HANDLER}
+echo "Remove:           " ${FUNCTION_DEL_ADD_HANDLER}
+echo "Search:           " ${FUNCTION_REK_SEARCH_HANDLER}
+echo "-----LAMBDA FUNCTIONS-------"
 echo ""
 echo "-----Try out the following commands: -------"
 echo ""
@@ -291,7 +298,14 @@ echo "Sample search command (the token will expire in about an hour)"
 echo "-------------------"
 echo "curl -X POST -H \"Authorization: ${JWT_ID_TOKEN}\" -H \"search-key: building\" -H \"Cache-Control: no-cache\" \"${API_GATEWAY_URL}/picture/search/\""
 echo ""
+echo "Use the following command to regenerate the JWT ID TOKEN after it's expired"
+echo "aws cognito-idp admin-initiate-auth  --user-pool-id ${USER_POOL_ID} --client-id ${COGNITO_CLIENT_ID} --cli-input-json file:///tmp/authflow.json --query AuthenticationResult.IdToken --output text"
+echo ""
 echo "Remove the picture"
 echo "-------------------"
 echo "aws s3 rm s3://${BUCKET_NAME}/usercontent/${COGNITO_IDENTITY_ID}/new-york.jpg"
+echo ""
+echo ""
+echo "Want to redeploy the Search Lambda function? Run the following command"
+echo "aws lambda update-function-code --region ${REGION} --function-name ${FUNCTION_REK_SEARCH} --zip-file fileb://${JAR_LOCATION}"
 echo ""

@@ -4,10 +4,7 @@ import com.amazonaws.HttpMethod
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
-import com.budilov.Properties
 import java.net.URL
-import java.time.Duration
-import java.time.Instant
 import java.util.*
 
 /**
