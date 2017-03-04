@@ -26,6 +26,7 @@ import java.util.*
 
 class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotosHandler.SearchResponse> {
     private val esService = ESPictureService()
+    private val s3Service = S3Service()
     private val searchKeyName = "search-key"
     private val identityClient: AmazonCognitoIdentity = AmazonCognitoIdentityClient(AnonymousAWSCredentials())
 
@@ -57,8 +58,10 @@ class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotos
             for (picture in pictureList) {
                 logger?.log("object: " + picture.s3BucketUrl.substringAfter("/"))
 
-                picture.signedUrl = S3Service.getSignedUrl(Properties._BUCKET_NAME,
+                picture.signedUrl = s3Service.getSignedUrl(Properties._BUCKET_NAME,
                         picture.s3BucketUrl.substringAfter("/")).toString()
+
+                logger?.log("signedUrl: " + picture.signedUrl)
             }
             val headers: MutableMap<String, String> = HashMap()
             headers.put("Content-Type", "application/json")

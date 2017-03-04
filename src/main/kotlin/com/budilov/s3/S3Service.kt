@@ -10,7 +10,7 @@ import java.util.*
 /**
  * Created by Vladimir Budilov
  */
-object S3Service {
+class S3Service {
 
     private val s3Client = AmazonS3Client(EnvironmentVariableCredentialsProvider())
 
@@ -23,7 +23,7 @@ object S3Service {
         generatePresignedUrlRequest.method = HttpMethod.GET
         generatePresignedUrlRequest.expiration = getExpiration()
 
-        return S3Service.s3Client.generatePresignedUrl(generatePresignedUrlRequest)
+        return this.s3Client.generatePresignedUrl(generatePresignedUrlRequest)
     }
 
     /**
