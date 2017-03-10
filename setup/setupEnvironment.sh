@@ -248,7 +248,7 @@ aws lambda add-permission \
 ## Create a script that will remove (most) all of the AWS resources created
 cat << EOF >> ${DELETE_SCRIPT}
 echo "Deleting API Gateway"
-aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID}
+aws apigateway delete-rest-api --rest-api-id ${GATEWAY_ID} --region ${REGION}
 
 EOF
 
