@@ -278,9 +278,6 @@ echo "------------"
 echo "You're done! Run ${DELETE_SCRIPT} if you want to revert the actions of this script. WARNING: It will DELETE all of the newly-created resources. "
 echo "------------"
 echo ""
-echo "These are you configured values:"
-grep "=" ../src/main/kotlin/com/budilov/Properties.kt
-echo ""
 echo "-----COGNITO IDs-------"
 echo "User Pool:        " ${USER_POOL_ID}
 echo "Identity Pool:    " ${IDENTITY_POOL_ID}
