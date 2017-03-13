@@ -34,7 +34,7 @@ The following command will setup all of the needed resources, as well as print o
 to test your configuration:
 ```
 # Clone it from github
-git clone --depth 1 git@github.com:awslabs/serverless-photo-recognition.git
+git clone --depth 1 https://github.com/awslabs/serverless-photo-recognition.git
 ```
 ```
 # Run the installation script
