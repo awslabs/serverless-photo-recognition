@@ -30,6 +30,12 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 * [Amazon Elasticsearch](https://aws.amazon.com/elasticsearch-service/)
 
 ### AWS Setup
+Before we start, let’s make sure that your working environment is setup to run the script. Here's what you'll need:
+
+* An AWS Account with a default VPC
+* Java 8
+* The latest AWS CLI (Tested with aws-cli/1.11.29 Python/2.7.12). 
+
 The following command will setup all of the needed resources, as well as print out the sample command that you can run
 to test your configuration:
 ```
