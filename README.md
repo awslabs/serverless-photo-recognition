@@ -34,7 +34,8 @@ Before we start, let’s make sure that your working environment is setup to run
 
 * An AWS Account with a default VPC
 * Java 8
-* The latest AWS CLI (Tested with aws-cli/1.11.29 Python/2.7.12). 
+* The latest AWS CLI (Tested with aws-cli/1.11.29 Python/2.7.12)
+* Linux or Mac OS to run the setup script (the setup script won't work on Windows)
 
 The following command will setup all of the needed resources, as well as print out the sample command that you can run
 to test your configuration:
