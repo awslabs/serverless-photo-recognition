@@ -7,13 +7,13 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 
 ### The Architecture
 
-####Adding an image
+#### Adding an image
 ![Adding an image](/setup/img/ServerlessPhotoRecognition_Add_Image.png?raw=true)
 
-####Removing an image
+#### Removing an image
 ![Remove an image](/setup/img/ServerlessPhotoRecognition_Remove_Image.png?raw=true)
 
-####Searching images
+#### Searching images
 ![Search images](/setup/img/ServerlessPhotoRecognition_Search_Image.png?raw=true)
 
 ### Tech Stack
