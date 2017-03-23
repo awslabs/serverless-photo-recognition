@@ -1,6 +1,8 @@
 package com.budilov
 
 import com.amazonaws.auth.AnonymousAWSCredentials
+import com.amazonaws.regions.Region
+import com.amazonaws.regions.Regions
 import com.amazonaws.services.cognitoidentity.AmazonCognitoIdentity
 import com.amazonaws.services.cognitoidentity.AmazonCognitoIdentityClient
 import com.amazonaws.services.cognitoidentity.model.GetIdRequest
@@ -83,6 +85,7 @@ class SearchPhotosHandler : RequestHandler<ApigatewayRequest.Input, SearchPhotos
         idRequest.identityPoolId = Properties._COGNITO_POOL_ID
         idRequest.logins = mapOf(Pair(Properties._COGNITO_POOL_ID_IDP_NAME, authToken))
 
+        identityClient.setRegion(Region.getRegion(Regions.fromName(Properties._REGION)))
         val idResp = identityClient.getId(idRequest)
 
         return idResp.identityId ?: ""
