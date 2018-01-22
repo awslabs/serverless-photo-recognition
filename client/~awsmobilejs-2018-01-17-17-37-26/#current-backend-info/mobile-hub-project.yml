@@ -1,0 +1,14 @@
+--- !com.amazonaws.mobilehub.v0.Project
+features: 
+  content-delivery: !com.amazonaws.mobilehub.v0.ContentDelivery
+    attributes: 
+      enabled: true
+      visibility: public-global
+    components: 
+      release: !com.amazonaws.mobilehub.v0.Bucket {}
+  mobile-analytics: !com.amazonaws.mobilehub.v0.Pinpoint
+    components: 
+      analytics: !com.amazonaws.mobilehub.v0.PinpointAnalytics {}
+  sign-in: !com.amazonaws.mobilehub.v0.SignIn {}
+name: client-2018-01-17-17-18-19
+region: us-east-1

@@ -1,0 +1,68 @@
+.Side-menu-default {
+
+  @color-blue-darkest: #1A2226;
+  @color-blue-dark: #222D32;
+  @color-grey-light: #B8C7CE;
+  @color-grey-dark: #4A636E;
+  @color-blue-light: #C4EAF2;
+
+
+  *:not(i) {
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: 300;
+  }
+
+  background-color: @color-blue-dark;
+  color: @color-grey-light;
+
+  .divider {
+    background-color: @color-blue-darkest;
+    color: @color-grey-dark;
+    text-transform: uppercase;
+  }
+
+ .item {
+
+    a {
+      text-decoration: none;
+      color: @color-grey-light;
+    }
+
+    &.active {
+      color: white;
+
+      .children {
+        color: @color-grey-light;
+      }
+
+      >.item-title {
+        >a {
+          color: white;
+        }
+      }
+    }
+
+    &:hover {
+      > .item-title {
+        color: white;
+
+        a {
+          color: white;
+        }
+      }
+    }
+
+    &.item-level-1 {
+      &:hover {
+        >.item-title {
+          background-color: lighten(@color-blue-darkest, 20%);
+        }
+      }
+
+      &:hover, &.active {
+        border-left: 4px solid @color-blue-light;
+      }
+    }
+
+  }
+}
