@@ -7,9 +7,11 @@
   "dependencies": {
     "aws-amplify": "^0.1.x",
     "aws-amplify-react": "^0.1.30",
+    "bootstrap": "^3.0.0",
     "impromptu-react-sidemenu": "^0.1.1",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
+    "react": "^15.6.2",
+    "react-dom": "^15.6.2",
+    "react-router": "^3.2.0",
     "react-scripts": "1.1.0",
     "react-sidemenu": "0.0.13"
   },

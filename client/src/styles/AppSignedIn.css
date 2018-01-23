@@ -4,7 +4,7 @@
 }
 
 .amplify-nav-bar {
-  float: right;
+  display: none;
 }
 
 .AppSignedIn {

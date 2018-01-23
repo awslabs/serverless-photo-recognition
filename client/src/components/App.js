@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import Amplify from 'aws-amplify';
-import { Authenticator } from 'aws-amplify-react';
+import { withAuthenticator } from 'aws-amplify-react';
 import { Storage } from 'aws-amplify';
 //import { PhotoPicker } from 'aws-amplify-react';
-
-import AppSignedIn from './AppSignedIn';
-
+// import AppSignedIn from './AppSignedIn';
+import Layout from './Layout'
 
 Amplify.configure({
     Auth: {
@@ -23,22 +22,14 @@ Amplify.configure({
 
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    Storage.configure({ level: 'private', track: true })
-    this.state = {};
-  }
-
   render(){
     return (
       <div>
-        <Authenticator>
-          <AppSignedIn />
-        </Authenticator>
+        <Layout { ...this.props } />
       </div>
     );
   }
 
 }
 
-export default App;
+export default withAuthenticator(App, { includeGreetings: true });
