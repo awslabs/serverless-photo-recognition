@@ -1,0 +1,22 @@
+{
+	"ProjectName": "client",
+	"ProjectPath": "/Users/salzer/serverless-media-analysis/client",
+	"SourceDir": "src",
+	"DistributionDir": "build",
+	"BuildCommand": "npm run-script build",
+	"StartCommand": "npm run-script start",
+	"InitializationTime": "2018-01-17-17-37-26",
+	"LastConfigurationTime": "2018-01-17-17-37-35",
+	"LastNPMInstallTime": "2018-01-23-13-02-41",
+	"FrontendLastBuildTime": "2018-01-23-13-03-54",
+	"LastPublishTime": "2018-01-23-13-03-57",
+	"BackendFormat": "yml",
+	"BackendLastBuildTime": "2018-01-23-13-02-25",
+	"BackendLastUpdateTime": "2018-01-19-12-22-51",
+	"BackendLastUpdateSuccessful": true,
+	"BackendProjectID": "1ee47b9c-433b-4fc4-ba0b-ca05b8bf50d4",
+	"BackendProjectName": "client-2018-01-17-17-37-35",
+	"BackendProjectConsoleUrl": "https://console.aws.amazon.com/mobilehub/home#/1ee47b9c-433b-4fc4-ba0b-ca05b8bf50d4/build",
+	"BackendProjectCreationTime": "2018-01-18T01:37:38.589Z",
+	"BackendProjectLastUpdatedTime": "2018-01-19T20:22:50.642Z"
+}

@@ -1,0 +1,12 @@
+#file-input {
+	display: none;
+}
+
+.hidden {
+	display: none;
+}
+
+.preview-container {
+	padding-bottom: 20px;
+	max-height: 80%;
+}

@@ -1,0 +1,35 @@
+input {
+    width: 100%;
+    margin-bottom: 10px;
+    height: 44px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #d9d9d9;
+    border-top: 1px solid #c0c0c0;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    background: #fff;
+    padding: 10px;
+}
+
+.btn-lg {
+	width: 100%;
+	margin-bottom: 5px;
+}
+
+.container {
+	margin-top: 5%;
+}
+
+#forgot-password {
+	margin-left: 10px;
+}
+
+.helper-button {
+	border: none;
+    background: none;
+}
+
+.helper-button:hover {
+	text-decoration: underline;
+}
