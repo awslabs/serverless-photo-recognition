@@ -1,24 +1,24 @@
 import AppComponent from '../components/App';
 import { connect } from 'react-redux';
-// import { 
-// 	selectedMenuItem
-// } from '../actions/app';
+import { 
+	signedIn
+} from '../actions/app';
 
 
-// const mapDispatchToProps = (dispatch) => {
-// 	return {
-// 		selectedMenuItem: (item) => {
-// 			dispatch(selectedMenuItem(item));	
-// 		}
-// 	};
-// };
+const mapDispatchToProps = (dispatch) => {
+	return {
+		SignedIn: (signedIn) => {
+			dispatch(signedIn(signedIn));	
+		}
+	};
+};
 
-// function mapStateToProps(state){
-// 	return {
-// 		app: state.app,
-// 	};
-// }
+function mapStateToProps(state){
+	return {
+		app: state.app,
+	};
+}
 
-//export default connect(mapStateToProps, mapDispatchToProps)(AppSignedIn);
-export default connect()(AppComponent);
+export default connect(mapStateToProps, mapDispatchToProps)(AppComponent);
+//export default connect()(AppComponent);
 

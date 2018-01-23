@@ -1,6 +1,9 @@
 import React from 'react';
 import './styles/index.css';
 import './styles/bootstrap-css/bootstrap.min.css'
+import './styles/bootstrap-css/fileinput.min.css'
+//import './utils/jquery.min.js'
+//import './utils/fileinput.min.js'
 import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import configureStore from './store/configureStore';

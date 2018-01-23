@@ -1,14 +1,14 @@
 import { 
-	SELECTED_MENU_ITEM
+	SIGNED_IN
 } from '../actions/app';
 
 const INITIAL_STATE = {
-	selectedMenuItem: 'browse',
+	signedIn: 'false',
 };
 
 export default function(state=INITIAL_STATE, action){
 	switch(action.type){
-		case SELECTED_MENU_ITEM:
+		case SIGNED_IN:
 			return {
 				...state,
 				stream: action.payload

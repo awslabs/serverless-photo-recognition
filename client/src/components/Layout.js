@@ -27,24 +27,6 @@ class Layout extends Component {
   render() {
     if (this.props.authState !== 'signedIn') { return null; }
 
-    // return (
-    //   <div className="AppSignedIn">
-    //     <SideMenu onMenuItemClick={(value) => this.props.selectedMenuItem = value}>
-    //       <Item divider={true} label="Media Files" value="media-files"/>
-    //         <Item label="Browse" value="browse" icon="fa-search"></Item>
-    //         <Link to="/upload">
-    //           <Item label="Upload" icon="fa-automobile"></Item>
-    //         </Link>
-    //       <Item divider={true} label="Rekognition" value="rekognition"/>
-    //       <Item label="Labels" value="labels" icon="fa-bar-chart"/>
-    //     </SideMenu>
-    //     <div className="content">
-    //       { this.props.children }
-    //     </div>
-
-    //   </div>
-    // );
-
     return (
       <div className="AppSignedIn">
         <div className="row profile">
@@ -52,10 +34,7 @@ class Layout extends Component {
             <div className="profile-sidebar">
               <div className="profile-usertitle">
                 <div className="profile-usertitle-name">
-                  Test User
-                </div>
-                <div className="profile-usertitle-job">
-                  Developer
+                  test@user.com
                 </div>
               </div>
               <div className="profile-userbuttons">

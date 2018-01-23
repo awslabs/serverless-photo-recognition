@@ -1,8 +1,8 @@
-export const SELECTED_MENU_ITEM = "SELECTED_MENU_ITEM";
+export const SIGNED_IN = "SIGNED_IN";
 
-export function selectedMenuItem(item){
+export function signedIn(signedIn){
 	return {
-		type: SELECTED_MENU_ITEM,
-		payload: item
+		type: SIGNED_IN,
+		payload: signedIn
 	};	
 };
