@@ -1,12 +1,13 @@
+
+#### Creator: Vladimir Budilov
+* [LinkedIn](https://www.linkedin.com/in/vbudilov/)
+* [Medium](https://medium.com/@budilov)
+
 Serverless Photo Recognition
 ===================================================
 ### What is it?
 A collection of 3 lambda functions that are invoked by Amazon S3, Amazon API Gateway, and directly (RESTful calls) 
 to analyze uploaded images in S3 with Amazon Rekognition and save picture metadata to ElasticSearch
-
-#### Creator: Vladimir Budilov
-* [LinkedIn](https://www.linkedin.com/in/vbudilov/)
-* [Medium](https://medium.com/@budilov)
 
 ### The Architecture
 
