@@ -9,6 +9,11 @@ Serverless Photo Recognition
 A collection of 3 lambda functions that are invoked by Amazon S3, Amazon API Gateway, and directly (RESTful calls) 
 to analyze uploaded images in S3 with Amazon Rekognition and save picture metadata to ElasticSearch
 
+### Before you start
+1. When you run the setup script your account will start incurring AWS infrastructure costs. 
+2. This project was written a while back, before CloudFormation was available for all of the services in use, hence 
+my use of the AWS CLI. If I were to write this today I would use [CDK](https://aws.amazon.com/cdk/) to create all of the resources (from IAM roles to ElasticSearch service). 
+ 
 ### The Architecture
 
 #### Adding an image

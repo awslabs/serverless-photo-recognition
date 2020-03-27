@@ -169,21 +169,32 @@ cat s3-notifications.json |
     sed 's#REKOGNITION_ADD_FUNCTION_ARN_REPLACE_ME#'${REKOGNITION_ADD_FUNCTION_ARN}'#g' > /tmp/s3-notifications.json
 
 echo "Creating the events"
-aws s3api put-bucket-notification-configuration --bucket ${BUCKET_NAME} --notification-configuration file:///tmp/s3-notifications.json --region ${REGION}
+aws s3api put-bucket-notification-configuration --bucket ${BUCKET_NAME} \
+  --notification-configuration file:///tmp/s3-notifications.json \
+  --region ${REGION}
 
-# Setup Elasticsearch
-echo "Setup Elasticsearch with a domain of ${ES_DOMAIN_NAME}"
-aws es create-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --elasticsearch-version 5.1 --elasticsearch-cluster-config InstanceType=t2.small.elasticsearch,InstanceCount=1 --ebs-options EBSEnabled=true,VolumeType=standard,VolumeSize=10 --region ${REGION}
 cat elasticsearch_service_policy.json |
     sed 's#ACCOUNT_NAME_REPLACE_ME#'${ACCOUNT_NUMBER}'#g' |
     sed 's#REGION_REPLACE_ME#'${REGION}'#g' |
     sed 's#ROLE_NAME_REPLACE_ME#'${ROLE_NAME}'#g' |
     sed 's#ES_DOMAIN_NAME_REPLACE_ME#'${ES_DOMAIN_NAME}'#g' |
     sed 's#EXTERNAL_IP_ADDRESS_REPLACE_ME#'${EXTERNAL_IP_ADDRESS}'#g' > /tmp/elasticsearch_service_policy.json
-aws es update-elasticsearch-domain-config --domain-name ${ES_DOMAIN_NAME} --access-policies file:///tmp/elasticsearch_service_policy.json --region ${REGION}
+
+# Setup Elasticsearch
+echo "Setup Elasticsearch with a domain of ${ES_DOMAIN_NAME}. This could take a while (10 minutes)"
+aws es create-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} \
+  --elasticsearch-version 6.8 \
+  --elasticsearch-cluster-config InstanceType=m5.large.elasticsearch,InstanceCount=1 \
+  --ebs-options EBSEnabled=true,VolumeType=standard,VolumeSize=10 \
+  --access-policies file:///tmp/elasticsearch_service_policy.json \
+  --region ${REGION} >> /tmp/create-elasticsearch-domain-${ES_DOMAIN_NAME}
+
+sleep 10
+
+echo "Let's see if ${ES_DOMAIN_NAME} was created already"
 
 ## We need the endpoint url now, but the ES domain is most-likely processing right now. Let's wait until it finishes
-while [ 'None' == $(aws es describe-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --query "DomainStatus.Endpoint" --output text --region ${REGION}) ];
+while [ 'None' == "$(aws es describe-elasticsearch-domain --domain ${ES_DOMAIN_NAME} --query "DomainStatus.Endpoint" --output text --region ${REGION})" ];
 do
     echo "Waiting for the ES domain ${ES_DOMAIN_NAME} to finish processing. Sleeping..."
     sleep 30
@@ -195,7 +206,7 @@ echo "Got the ES endpoint: ${ES_ENDPOINT}"
 # Create delete ES domain
 cat << EOF >> ${DELETE_SCRIPT}
 echo "Deleting the ES domain"
-aws es delete-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --region ${REGION}
+aws es delete-elasticsearch-domain --domain-name ${ES_DOMAIN_NAME} --region ${REGION} >> /tmp/delete-elasticsearch-domain-${ES_DOMAIN_NAME}
 
 EOF
 
