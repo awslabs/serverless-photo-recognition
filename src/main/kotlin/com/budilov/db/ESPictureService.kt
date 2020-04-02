@@ -6,10 +6,7 @@ import com.budilov.pojo.PictureItem
 import io.searchbox.client.JestClient
 import io.searchbox.client.JestClientFactory
 import io.searchbox.client.config.HttpClientConfig
-import io.searchbox.core.Delete
-import io.searchbox.core.Get
-import io.searchbox.core.Index
-import io.searchbox.core.Search
+import io.searchbox.core.*
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder
 import vc.inreach.aws.request.AWSSigner
@@ -25,7 +22,7 @@ import java.time.ZoneOffset
  *
  */
 
-class ESPictureService : DBPictureService {
+class ESPictureService {
 
     private val client: JestClient
 
@@ -51,7 +48,7 @@ class ESPictureService : DBPictureService {
      * Return one PictureItem
      *
      */
-    override fun get(userId: String, docId: String): PictureItem {
+    fun get(userId: String, docId: String): PictureItem {
         val get = Get.Builder(_DEFAULT_INDEX, docId).type(userId).build()
 
         val result = client.execute(get)
@@ -62,8 +59,9 @@ class ESPictureService : DBPictureService {
     /**
      * Delete a picture from ES
      */
-    override fun delete(userId: String, item: PictureItem): Boolean {
+    fun delete(userId: String, item: PictureItem): Boolean {
 
+        //TODO: fix this up
         val delete = client.execute(Delete.Builder(item.id)
                 .index(_DEFAULT_INDEX)
                 .type(userId)
@@ -72,12 +70,27 @@ class ESPictureService : DBPictureService {
         return delete.isSucceeded
     }
 
+    fun deleteByCustomId(userId: String, item: PictureItem): Boolean {
+        val deleteByCustomValue = DeleteByQuery.Builder(""" 
+            "match": {
+              "id": "${item.id}"
+            } 
+        """)
+                .addIndex(_DEFAULT_INDEX)
+                .addType(userId)
+                .build()
+        client.execute(deleteByCustomValue)
+
+        //TODO: fix this up
+        return true
+    }
+
     /**
      * Search for pictures.
      *
      * returns List<PictureItem>
      */
-    override fun search(userId: String, query: String): List<PictureItem> {
+    fun search(userId: String, query: String): List<PictureItem> {
         val matchAllQuery = getMatchAllQuery(query)
 
         val search = Search.Builder(matchAllQuery)
@@ -96,7 +109,7 @@ class ESPictureService : DBPictureService {
      *
      * For now it always returns true
      */
-    override fun add(userId: String, item: PictureItem): Boolean {
+    fun add(userId: String, item: PictureItem): Boolean {
         val index = Index.Builder(item).index(_DEFAULT_INDEX).type(userId).build()
         val result = client.execute(index)
 

@@ -30,20 +30,20 @@ class AddPhotoLambda : RequestHandler<S3Event, String> {
         val srcBucket = record.s3.bucket.name
 
         // Object key may have spaces or unicode non-ASCII characters.
-        var srcKeyEncoded = record.s3.`object`.key
+        val srcKeyEncoded = record.s3.`object`.key
                 .replace('+', ' ')
 
         val srcKey = URLDecoder.decode(srcKeyEncoded, "UTF-8")
-        logger.log("bucket: ${srcBucket}, key: ${srcKey}")
+        logger.log("bucket: ${srcBucket}, key: $srcKey")
 
-        // Get the cognito id from the object name (it's a prefix)
+        // Get the cognito id from the object name (it's a prefix)...hacky, don't judge
         val cognitoId = srcKey.split("/")[1]
-        logger.log("Cognito ID: ${cognitoId}")
+        logger.log("Cognito ID: $cognitoId")
 
         val labels = rekognition.getLabels(srcBucket, srcKey)
         if (labels.isNotEmpty()) {
             val picture = PictureItem(srcKeyEncoded.hashCode().toString(), srcBucket + Properties._BUCKET_URL + "/" + srcKey, labels, null)
-            logger.log("Saving picture: ${picture}")
+            logger.log("Saving picture: $picture")
 
             // Save the picture to ElasticSearch
             esService.add(cognitoId, picture)

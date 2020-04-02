@@ -1,7 +1,8 @@
 
-#### Creator: Vladimir Budilov
+### Author: Vladimir Budilov
 * [LinkedIn](https://www.linkedin.com/in/vbudilov/)
 * [Medium](https://medium.com/@budilov)
+* [Twitter](https://twitter.com/VladimirBudilov)
 
 Serverless Photo Recognition
 ===================================================

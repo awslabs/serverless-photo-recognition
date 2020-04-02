@@ -31,23 +31,24 @@ class RemovePhotoLambda : RequestHandler<S3Event, String> {
         val srcBucket = record.s3.bucket.name
 
         // Object key may have spaces or unicode non-ASCII characters.
-        var srcKeyEncoded = record.s3.`object`.key
+        val srcKeyEncoded = record.s3.`object`.key
                 .replace('+', ' ')
 
         logger?.log("Full object name: " + record.s3.`object`.toString())
         val srcKey = URLDecoder.decode(srcKeyEncoded, "UTF-8")
-        logger?.log("bucket: ${srcBucket} key: ${srcKey}")
+        logger?.log("bucket: $srcBucket key: $srcKey")
 
         val picture = PictureItem(srcKeyEncoded.hashCode().toString(), srcBucket + Properties._BUCKET_URL + "/" + srcKey, null, null)
-        logger?.log("Removing picture from ES: ${picture}")
+        logger?.log("Removing picture from ES: $picture")
 
         // Getting the cognito id from the object name (it's a prefix)
         val cognitoId = srcKey.split("/")[1]
-        logger?.log("Cognito ID: ${cognitoId}")
+        logger?.log("Cognito ID: $cognitoId")
 
-        esService.delete(cognitoId, picture)
+        esService.deleteByCustomId(cognitoId, picture)
 
         return "Ok"
 
     }
 }
+
