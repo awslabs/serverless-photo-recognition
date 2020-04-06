@@ -17,7 +17,7 @@ import java.net.URLDecoder
  */
 class RemovePhotoLambda : RequestHandler<S3Event, String> {
 
-    val esService = ESPictureService()
+    private val esService = ESPictureService()
 
     /**
      * 1. Get the s3 bucket and object name in question
@@ -34,7 +34,6 @@ class RemovePhotoLambda : RequestHandler<S3Event, String> {
         val srcKeyEncoded = record.s3.`object`.key
                 .replace('+', ' ')
 
-        logger?.log("Full object name: " + record.s3.`object`.toString())
         val srcKey = URLDecoder.decode(srcKeyEncoded, "UTF-8")
         logger?.log("bucket: $srcBucket key: $srcKey")
 
@@ -45,7 +44,8 @@ class RemovePhotoLambda : RequestHandler<S3Event, String> {
         val cognitoId = srcKey.split("/")[1]
         logger?.log("Cognito ID: $cognitoId")
 
-        esService.deleteByCustomId(cognitoId, picture)
+//        esService.deleteByCustomId(cognitoId, picture)
+        esService.delete(cognitoId, picture)
 
         return "Ok"
 

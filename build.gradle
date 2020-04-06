@@ -14,16 +14,14 @@ tasks.withType(JavaCompile) {
 }
 
 buildscript {
-    ext.kotlin_version = '1.0.6'
     ext.aws_version = '1.11.63'
-    ext.jest_version = '2.0.3'
     ext.gradle_deps = '0.6.0.RELEASE'
 
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.61"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.71"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.7.RELEASE"
     }
 
@@ -65,7 +63,7 @@ dependencyManagement {
 
 dependencies {
     // Kotlin
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:1.3.71"
 
     // AWS SDK
     compile "com.amazonaws:aws-java-sdk-lambda"
@@ -76,10 +74,10 @@ dependencies {
     compile "commons-io:commons-io:2.5"
 
     // ElasticSearch
-    compile "io.searchbox:jest:$jest_version"
+    compile "io.searchbox:jest:6.3.1"
     // Required for Sig4 signing on the Jest requests
-    compile "vc.inreach.aws:aws-signing-request-interceptor:0.0.15"
+    compile "vc.inreach.aws:aws-signing-request-interceptor:0.0.22"
 
     testCompile 'junit:junit:4.11'
-    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:1.3.71"
 }

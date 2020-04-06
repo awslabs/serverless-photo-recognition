@@ -61,7 +61,6 @@ class ESPictureService {
      */
     fun delete(userId: String, item: PictureItem): Boolean {
 
-        //TODO: fix this up
         val delete = client.execute(Delete.Builder(item.id)
                 .index(_DEFAULT_INDEX)
                 .type(userId)
@@ -71,14 +70,22 @@ class ESPictureService {
     }
 
     fun deleteByCustomId(userId: String, item: PictureItem): Boolean {
-        val deleteByCustomValue = DeleteByQuery.Builder(""" 
-            "match": {
-              "id": "${item.id}"
-            } 
-        """)
+
+        val query = """ 
+            "query": { 
+                "match": {
+                  "id": "${item.id}"
+                } 
+            }
+        """
+
+        println("deleteByCustomId query \n $query ")
+        val deleteByCustomValue = DeleteByQuery.Builder(query)
                 .addIndex(_DEFAULT_INDEX)
                 .addType(userId)
                 .build()
+
+//        println("deleteByCustomId uri: ${deleteByCustomValue?.uri}")
         client.execute(deleteByCustomValue)
 
         //TODO: fix this up
@@ -110,9 +117,14 @@ class ESPictureService {
      * For now it always returns true
      */
     fun add(userId: String, item: PictureItem): Boolean {
-        val index = Index.Builder(item).index(_DEFAULT_INDEX).type(userId).build()
+        val index = Index.Builder(item)
+                .index(_DEFAULT_INDEX)
+                .type(userId)
+                .id(item.id)
+                .build()
         val result = client.execute(index)
 
+        println("added item with id of ${result?.id}")
         return result.isSucceeded
     }
 

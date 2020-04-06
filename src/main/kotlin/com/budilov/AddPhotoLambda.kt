@@ -47,7 +47,6 @@ class AddPhotoLambda : RequestHandler<S3Event, String> {
 
             // Save the picture to ElasticSearch
             esService.add(cognitoId, picture)
-
         } else {
             logger.log("No labels returned. Not saving to ES")
             //todo: create an actionable event to replay the flow

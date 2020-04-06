@@ -13,7 +13,7 @@ to analyze uploaded images in S3 with Amazon Rekognition and save picture metada
 ### Before you start
 1. When you run the setup script your account will start incurring AWS infrastructure costs. 
 2. This project was written a while back, before CloudFormation was available for all of the services in use, hence 
-my use of the AWS CLI. If I were to write this today I would use [CDK](https://aws.amazon.com/cdk/) to create all of the resources (from IAM roles to ElasticSearch service). 
+my use of the AWS CLI. If I were to write this today I would use [CDK](https://aws.amazon.com/cdk/) to create all of the resources (from IAM roles to ElasticSearch service). Check out [this project](https://github.com/vbudilov/aws-cdk-starter) for a reference.  
  
 ### The Architecture
 
